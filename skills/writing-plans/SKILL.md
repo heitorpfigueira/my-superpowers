@@ -11,11 +11,13 @@ Write comprehensive implementation plans assuming the engineer has zero context 
 
 Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
 
+Each task in this plan becomes one child branch under git-branch-workflow. The plan is what turns "here's the spec" into "here's the fixed list of child branches, in order, and what each one proves when it's done."
+
 **Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
 
-**Context:** If working in an isolated worktree, it should have been created via the `using-git-worktrees` skill at execution time.
+**Context:** This plan is written on a parent branch created by git-branch-workflow, off the approved spec from brainstorming. If for some reason no parent branch exists yet (plan being written outside that workflow), fall back to using-git-worktrees for isolation before writing any code.
 
-**Save plans to:** `docs/plans/YYYY-MM-DD-<feature-name>.md`
+**Save plans to:** `docs/development/plan/YYYY-MM-DD-<topic>-plan.md`
 - (User preferences for plan location override this default)
 
 ## Scope Check
@@ -32,6 +34,15 @@ Before defining tasks, map out which files will be created or modified and what 
 - In existing codebases, follow established patterns. If the codebase uses large files, don't unilaterally restructure - but if a file you're modifying has grown unwieldy, including a split in the plan is reasonable.
 
 This structure informs the task decomposition. Each task should produce self-contained changes that make sense independently.
+
+## Check for Code-Style Skills and Conventions
+
+Before writing a single code example, check for two things:
+
+1. **A personal or project skill about how code should be written** — naming conventions, preferred patterns, a style guide. If one applies, invoke it now and write every code example in this plan to match it, rather than writing generic examples and hoping a reviewer catches the mismatch later. Don't count on stumbling into this by way of the general "check for relevant skills" rule — that rule competes for attention against everything else this skill is asking you to do at the same time, so it's easy to satisfy in spirit while missing it in practice. Checking explicitly, here, is what actually makes it reliable.
+2. **`docs/coding/`** (written via writing-documentation from earlier work on this project) — conventions the project has already settled on. Treat these the same as an invoked skill: follow them, don't re-litigate them in this plan.
+
+If a task's implementation will need to make a real styling or convention decision that isn't covered by either — not a trivial one, a genuine "we haven't decided this yet" — flag it in the plan rather than picking silently, so the decision gets made once and then captured in `docs/coding/` instead of made fresh by every task that touches it.
 
 ## Task Right-Sizing
 
@@ -58,7 +69,7 @@ independently testable deliverable.
 ```markdown
 # [Feature Name] Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use subagent-driven-development (recommended) or executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use subagent-driven-development (recommended) or executing-plans to implement this plan task-by-task, within the child branch git-branch-workflow creates for each task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** [One sentence describing what this builds]
 
@@ -80,6 +91,14 @@ include this section.]
 
 ````markdown
 ### Task N: [Component Name]
+
+**Behavior & Intent:** [One or two sentences naming the observable
+behavior this task changes or adds, and why that's the right
+behavior — the same framing a good commit message uses. "Adds
+retry-with-backoff to the sync client so a flaky network doesn't
+surface as a user-facing failure" — not "implement retry logic."
+This is what the child branch's commits should be able to point
+back to.]
 
 **Files:**
 - Create: `exact/path/to/file.py`
@@ -151,7 +170,7 @@ If you find issues, fix them inline. No need to re-review — just fix and move 
 
 After saving the plan, offer execution choice:
 
-**"Plan complete and saved to `docs/plans/<filename>.md`. Two execution options:**
+**"Plan complete and saved to `docs/development/plan/<filename>.md`. Two execution options:**
 
 **1. Subagent-Driven (recommended)** - I dispatch a fresh subagent per task, review between tasks, fast iteration
 

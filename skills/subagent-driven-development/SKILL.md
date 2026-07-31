@@ -109,10 +109,14 @@ digraph process {
 
 ## Setup
 
-Ensure the work happens in an isolated workspace: use
-using-git-worktrees to create one or verify the existing one.
-Never start implementation on a main/master branch without your human
-partner's explicit consent.
+Each task in the plan is one child branch under git-branch-workflow.
+Before dispatching a task's implementer, create (or check out) that
+task's child branch per that skill's Step 2 — don't dispatch onto
+whatever branch happens to be checked out. If this plan exists outside
+that workflow (no parent/grandparent branch behind it), fall back to
+using-git-worktrees for isolation instead. Never start implementation on
+a parent, grandparent, or main/master branch without your human partner's
+explicit consent.
 
 Conversation memory does not survive compaction. In real sessions,
 controllers that lost their place have re-dispatched entire completed task
@@ -441,8 +445,8 @@ Use finishing-a-development-branch.
 You: I'm using Subagent-Driven Development to execute this plan.
 
 [Setup: worktree verified]
-[Read plan file once: docs/plans/feature-plan.md]
-[Resolve workspace: scripts/sdd-workspace docs/plans/feature-plan.md — no ledger inside, fresh start]
+[Read plan file once: docs/development/plan/feature-plan.md]
+[Resolve workspace: scripts/sdd-workspace docs/development/plan/feature-plan.md — no ledger inside, fresh start]
 [Create todos for all tasks]
 
 Task 1: Hook installation script

@@ -25,10 +25,10 @@ Then announce "Using [skill] to [purpose]" and follow the skill exactly. If it h
 
 ## Skill Priority
 
-When multiple skills apply, process skills come first — they set the approach, then implementation skills (frontend-design, etc.) carry it out. Brainstorming and systematic-debugging are Superpowers' most common process skills, but the rule holds for any of them.
+When multiple skills apply, process skills come first — they set the approach, then implementation skills (frontend-design, etc.) carry it out. git-branch-workflow, brainstorming, and systematic-debugging are this set's most common process skills, but the rule holds for any of them.
 
-- "Let's build X" → brainstorming first, then implementation skills.
-- "Fix this bug" → systematic-debugging first, then domain skills.
+- "Let's build X" / "fix this bug" / any requested unit of work → git-branch-workflow first. It sets up the branch structure, then hands off to brainstorming (spec) and writing-plans (plan) itself — you don't need to separately reach for those first.
+- Debugging investigation with no new branch involved yet → systematic-debugging first, then domain skills.
 
 ## Red Flags
 

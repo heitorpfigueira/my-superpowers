@@ -13,6 +13,12 @@ Write the test first. Watch it fail. Write minimal code to pass.
 
 **Violating the letter of the rules is violating the spirit of the rules.**
 
+## Test the System, Not the Code
+
+A test should read like a claim about what the system does, not a description of how a function is implemented. The difference matters because implementation changes constantly and behavior is the thing that isn't supposed to — a test coupled to implementation breaks on every refactor whether or not anything actually broke; a test coupled to behavior only breaks when the behavior actually changed, which is exactly the signal you want.
+
+Concretely: name the test after the behavior and intent it verifies (the same framing a good commit message or plan task uses — see git-branch-workflow and writing-plans), not after the function it happens to call. Assert on outcomes a caller or user would notice, not on internal calls or state a refactor could legitimately rearrange. When you're about to write a test, ask "what is this system supposed to do here, and for whom" before "what function do I need to call."
+
 ## When to Use
 
 **Always:**
