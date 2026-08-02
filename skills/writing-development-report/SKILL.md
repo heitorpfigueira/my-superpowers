@@ -18,6 +18,10 @@ The spec said what to build and why. The plan said how. Neither says what actual
 Before writing, reconstruct what actually happened rather than relying on memory of it:
 
 - `git log --oneline <grandparent>..<parent>` — the sequence of squash-merged child branches tells you the actual shape the work took.
+- `docs/development/change/<parent-kind>-<topic>--*.md` — the change description written
+  at each child branch's review gate (git-branch-workflow Step 2.5). These are the best
+  material available for "What Was Built" and "Decisions & Deviations": each was written
+  while its slice was fresh, and the commits behind it no longer exist to consult.
 - The spec (`docs/development/spec/...`) and plan (`docs/development/plan/...`) for this topic — what was intended.
 - Any parked or deferred findings from code review during the child-branch work.
 - Any checks flagged along the way as unrunnable in this environment (git-branch-workflow

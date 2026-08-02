@@ -113,8 +113,9 @@ tooling — its CLI if one is available, or the creation URL most forges
 print when you push — following the repo's PR template and conventions if
 present, and report the URL to your human partner.
 
-The PR's Tests section must cover **both** what you ran and what you couldn't —
-see "The Tests Section" below.
+Two sections of the body have required shapes: **Impact Analysis** (what this touches
+beyond its own feature, security first) and **Tests** (both what you ran and what you
+couldn't). See the two sections below.
 
 Keep the worktree — your human partner iterates on PR feedback there.
 
@@ -148,6 +149,50 @@ Then clean up the worktree (Step 6) and force-delete the branch:
 ```bash
 git branch -D <feature-branch>
 ```
+
+## The Impact Analysis Section
+
+The PR body carries an **Impact Analysis** covering what this work touches beyond its
+own feature — security first, then the rest of the system.
+
+This is not a fresh analysis. `brainstorming` already produced one at spec time, and
+Step 3 of git-branch-workflow gates on "anything flagged in the spec's impact analysis."
+This section **carries that forward and reports what actually happened to it**: what the
+spec predicted, what turned out true, and what surfaced during implementation that
+nobody predicted. A PR whose impact analysis contradicts its spec's is a finding worth
+stating, not a discrepancy to smooth over.
+
+```markdown
+## Impact analysis
+
+**Security:** <auth/authz paths touched, new inputs crossing a trust boundary,
+secrets or tokens handled, new dependencies and why they're trustworthy, data
+exposed that wasn't before. "None - this is a <X> change that touches no
+<Y>" is a valid and useful answer when it's true.>
+
+**Blast radius:** <what else reads or depends on what changed - shared state,
+schemas, config, public interfaces. Name the callers you checked, not just
+the files you edited.>
+
+**Data and migrations:** <schema changes, backfills, anything irreversible or
+requiring ordered deploy. Omit if none.>
+
+**Compatibility:** <breaking changes to any consumed interface, and what
+depends on the old behavior. Omit if none.>
+
+**Diverged from the spec's impact analysis:** <anything the spec predicted
+that didn't hold, or that surfaced only during implementation. "Matched the
+spec" if it did.>
+```
+
+Same discipline as everything else here: **scoped to this diff, and honest about
+unknowns.** "I didn't check whether anything else calls this" is worth writing — it
+tells a reviewer exactly where to look. A generic paragraph that would be true of any
+PR is worse than no section, because it reads as though the question was considered.
+
+Drop a subsection entirely when it genuinely doesn't apply. Keep **Security** in every
+PR, even when the answer is "none" — an explicit "no security surface" is a claim
+someone made and can be challenged; an absent heading only means nobody looked.
 
 ## The Tests Section
 

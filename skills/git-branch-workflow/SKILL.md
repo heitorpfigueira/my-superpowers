@@ -124,14 +124,42 @@ For each functionality slice named in the plan:
    ```
 
    This is what makes a child branch's history useful as a recovery log even though the branch itself disappears at squash-merge time — the detail lives in the commits until they're squashed, and the squash-merge summary (next step) is what survives on the parent.
-5. **When the slice is done and its tests pass:** stop and ask your human partner to review the changes before squashing. Do not squash-merge on your own judgment that it's ready — this review is a hard gate, not a courtesy.
+5. **When the slice is done and its tests pass:** write a change description, publish it for review, and stop. Do not squash-merge on your own judgment that it's ready — this review is a hard gate, not a courtesy.
+
+   **Write it to `docs/development/change/<parent-kind>-<topic>--<slug>.md`.** This is the only place a child branch's reasoning survives: the Why/What detail lives in commits that are destroyed at squash-merge, so without this the richest account of each slice is also the most short-lived thing in the workflow. Same behavior-and-intent framing as the commits, but summarised for someone reading it cold:
+
+   ```markdown
+   # <slice, in plain words>
+
+   **Branch:** <child branch>  →  <parent branch>
+   **Date:** YYYY-MM-DD
+
+   ## What this slice does
+   <2-4 sentences. What now behaves differently, and why that's the right
+   behavior. Not a file list - someone who never saw this branch should
+   understand the intent from this paragraph alone.>
+
+   ## Changed and created
+   | File | New / Changed | What it owns now |
+   |---|---|---|
+
+   ## Why it was built this way
+   - **<decision>:** <reasoning - constraints, alternatives rejected>
+
+   ## Worth knowing
+   <Limitations, follow-ups, anything needing manual verification per
+   Step 2.2. Omit if genuinely nothing.>
+   ```
+
+   **Publish it.** If the project has a local forge configured, use the **local-pull-requests** skill — it opens a real PR with a file-by-file diff, using this description as the body. If it doesn't, deliver the same description in chat. The gate is unconditional; only the delivery differs:
    ```
    Child branch <name> is ready to squash-merge into <parent-kind>-<topic>. <N> commits, tests passing. Please review before I merge.
    ```
-6. Once approved, squash-merge into the parent and delete the child branch:
+6. Once approved, squash-merge into the parent and delete the child branch. The change description is committed **as part of the squash**, so it lands on the parent in the same commit as the work it describes:
    ```bash
    git checkout <release|patch>-<name>/<parent-kind>-<topic>
    git merge --squash <release|patch>-<name>/<parent-kind>-<topic>--<slug>
+   git add docs/development/change/<parent-kind>-<topic>--<slug>.md
    git commit   # write a summary commit message using the same Why/What/Left off/Next shape
    git branch -D <release|patch>-<name>/<parent-kind>-<topic>--<slug>
    ```
