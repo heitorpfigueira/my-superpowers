@@ -51,11 +51,18 @@ options either way):
 The branch name tells you the tier, and the tier tells you the base — no
 guessing needed:
 
+Check these shapes **in order** — `_base` is the deciding suffix, so test for it
+before the parent pattern, which otherwise also matches a grandparent:
+
 | Current branch shape | Tier | Lands on |
 |---|---|---|
-| `<type>/<topic>/<kind>` (3 segments: `release\|patch`, topic, `feature\|bugfix\|documentation`) | Parent | `<type>/<topic>/_base` (its grandparent) |
-| `<type>/<topic>/_base` | Grandparent | `main` |
-| `hotfix/<topic>` | Hotfix (parent-tier, no grandparent) | `main` |
+| `<release\|patch>-<name>/_base` | Grandparent | `main` |
+| `<release\|patch>-<name>/<feature\|bugfix\|documentation>-<topic>` | Parent | `<release\|patch>-<name>/_base` (its grandparent) |
+| `hotfix-<topic>` | Hotfix (parent-tier, no grandparent) | `main` |
+| `<parent>--<slug>` (contains `--`) | Child | Not this skill — squash-merges into its parent inline, per git-branch-workflow Step 2 |
+
+Worked example: `release-web-calendar/feature-calendar-views` is a parent, so it
+lands on `release-web-calendar/_base` — **not** on `main`.
 
 ```bash
 BRANCH=$(git branch --show-current)

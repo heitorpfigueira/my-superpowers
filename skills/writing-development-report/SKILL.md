@@ -30,7 +30,7 @@ Before writing, reconstruct what actually happened rather than relying on memory
 ```markdown
 # <Topic> - Development Report
 
-**Parent branch:** <type>/<topic>/<kind>
+**Parent branch:** <release|patch>-<name>/<feature|bugfix|documentation>-<topic>
 **Spec:** docs/development/spec/<file>
 **Plan:** docs/development/plan/<file>
 **Date:** YYYY-MM-DD
