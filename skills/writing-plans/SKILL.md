@@ -62,6 +62,20 @@ independently testable deliverable.
 - "Run the tests and make sure they pass" - step
 - "Commit" - step
 
+**Commit is a per-concern step, not a per-task step.** A task frequently
+bundles several independently-testable concerns (five schemas, four
+router resources, a set of sibling adapters) — that's normal, Task
+Right-Sizing above says as much. When it does, repeat the whole
+write-test → verify-fail → implement → verify-pass → commit cycle once
+per concern, with its own commit each time, rather than chaining every
+concern's implementation and deferring a single "Commit" step to the
+end of the task. git-branch-workflow requires atomic commits ("one
+concern per commit") on every child branch; a plan that only ever writes
+one terminal "Commit" step per task is what produces monolithic commits
+that violate that rule, no matter how many independent pieces the task
+actually contains. When laying out a task's steps, count its concerns
+first, then make sure "Commit" appears that many times.
+
 ## Plan Document Header
 
 **Every plan MUST start with this header:**
@@ -153,6 +167,7 @@ Every step must contain the actual content an engineer needs. These are **plan f
 - "Similar to Task N" (repeat the code — the engineer may be reading tasks out of order)
 - Steps that describe what to do without showing how (code blocks required for code steps)
 - References to types, functions, or methods not defined in any task
+- A single "Commit" step placed after several independent concerns' implementation steps, instead of one "Commit" step per concern (see Bite-Sized Task Granularity) — this produces a non-atomic commit and breaks git-branch-workflow's one-concern-per-commit rule
 
 ## Self-Review
 
@@ -163,6 +178,8 @@ After writing the complete plan, look at the spec with fresh eyes and check the 
 **2. Placeholder scan:** Search your plan for red flags — any of the patterns from the "No Placeholders" section above. Fix them.
 
 **3. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
+
+**4. Commit granularity:** For each task, count the independent concerns it bundles (separate schemas, separate routers, separate sibling files that don't depend on each other to be individually testable) and count its "Commit" steps. One terminal commit covering several concerns is a finding, not a style preference — split it into one commit per concern, per Bite-Sized Task Granularity.
 
 If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
 
