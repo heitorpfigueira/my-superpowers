@@ -90,7 +90,7 @@ For each functionality slice named in the plan:
    git checkout <type>/<topic>/<parent-kind>
    git checkout -b <type>/<topic>/<parent-kind>/<functionality-slug>
    ```
-2. **Delineate any additional tests** this slice needs beyond what the parent branch already covers, and write them — same behavior-and-intent framing.
+2. **Delineate any additional tests** this slice needs beyond what the parent branch already covers, and write them — same behavior-and-intent framing. If a check this slice genuinely needs *cannot run in this environment* (no display, no simulator, no device), note it as you go rather than dropping it — it becomes a reviewer instruction in the report and the PR. See verification-before-completion for the bar this has to clear; "tedious to automate" is not it.
 3. **REQUIRED SUB-SKILL:** Use test-driven-development for the implementation. Keep commits as atomic as possible — one concern per commit.
 4. Every commit on a child branch uses this message shape:
 
@@ -152,6 +152,8 @@ The grandparent itself moves to `main` via PR once every parent branch it needs 
 | Excuse | Reality |
 |---|---|
 | "I'll just commit this small fix straight to the parent branch" | The only things that belong directly on a parent branch are the spec, the plan, and the parent-level tests. Everything else is a child branch, even a one-line fix. |
+| "The suite is green, so the PR can just say tests pass" | If this environment couldn't run something that matters — anything visual, native-only, or device-bound — "tests pass" reads to a reviewer as "verified" and isn't. List it with steps and pass/fail criteria instead. |
+| "I'll list everything the container can't do, to be thorough" | Scope it to what this diff could break. A block that appears unchanged on every PR is one reviewers learn to skip, including when it matters. |
 | "This child branch is done, I'll merge it, the review can happen after" | The review gate is before the squash-merge, not after. Ask first. |
 | "It's basically a feature, I'll skip the spec since it's small" | brainstorming already scales spec length to complexity — a small feature gets a few sentences, not a skipped step. |
 | "This is urgent, I'll skip straight to a child branch off main" | Hotfix still gets a parent branch (`hotfix/<topic>`) — it only skips the grandparent, not the tier structure or the review gate. |

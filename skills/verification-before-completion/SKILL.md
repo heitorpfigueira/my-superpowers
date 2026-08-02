@@ -35,6 +35,45 @@ BEFORE claiming any status or expressing satisfaction:
 Skip any step = lying, not verifying
 ```
 
+## When Verification Is Impossible In This Environment
+
+The Iron Law has two outcomes: verified, or don't claim it. There is a third state it
+doesn't cover — a check that genuinely matters but that **no amount of effort in this
+environment can run**. A headless container has no display, no simulator, no
+`/dev/kvm`; a machine with no card reader can't test the card reader.
+
+Staying silent about these is its own failure. The claim "tests pass" is true and also
+misleading if a reviewer reads it as "this was verified." The rule is:
+
+```
+CANNOT VERIFY HERE  ->  RECORD IT AND HAND IT OFF
+                        (never silently, never as if verified)
+```
+
+Record: what to check, why this change could break it, the exact steps to run it, and
+what pass and fail look like. That turns a gap into a task someone can actually pick up.
+These items flow into the report (writing-development-report) and then into the PR body
+(finishing-a-development-branch), where the reviewer sees them.
+
+**Two guards, or this section becomes a dumping ground:**
+
+1. **Environment-blocked, not effort-blocked.** The bar is "this environment physically
+   cannot run it," not "this would take a while" or "this is awkward to automate." If it
+   could be a test, write the test. Offloading automatable work onto a human reviewer
+   under this heading is a way of skipping it.
+2. **Scoped to this change.** List only what this diff could plausibly break. A standing
+   list of everything the environment can't do belongs in the project's docs once, not
+   re-pasted into every PR — a reviewer who sees the same block every time stops reading
+   it, including the time it matters.
+
+| Situation | Handling |
+|---|---|
+| Headless env, change alters animation/layout/theme | Record it — a human with a display must look |
+| No simulator, change touches native-only navigation | Record it — needs a real device or simulator |
+| Change is logic-only, rendering untouched | Don't record it — nothing visual is at risk |
+| "Writing this test is tedious" | Not this category. Write the test. |
+| "The whole app should be smoke-tested" | Too broad to action. Scope it to what changed. |
+
 ## Common Failures
 
 | Claim | Requires | Not Sufficient |

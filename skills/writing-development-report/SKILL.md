@@ -20,6 +20,9 @@ Before writing, reconstruct what actually happened rather than relying on memory
 - `git log --oneline <grandparent>..<parent>` — the sequence of squash-merged child branches tells you the actual shape the work took.
 - The spec (`docs/development/spec/...`) and plan (`docs/development/plan/...`) for this topic — what was intended.
 - Any parked or deferred findings from code review during the child-branch work.
+- Any checks flagged along the way as unrunnable in this environment (git-branch-workflow
+  Step 2.2). Collect them now while the reasons are still reconstructable — by PR time,
+  "the drawer animation was never actually seen by anyone" is much harder to recover.
 - Anything written to `docs/` via writing-documentation during this parent branch's work — new conventions, architecture notes, glossary terms.
 
 ## Report Structure
@@ -61,6 +64,14 @@ plan as written" reads as verified.>
 tests from Step 1, plus what each child branch added. Confirm
 everything is green as of this report, not as of some earlier point
 in the work.>
+
+### Needs manual verification
+
+<Checks that matter for this work but that this environment cannot
+run - see verification-before-completion. Omit the section entirely
+if there are none; do not pad it. For each item: what to check, why
+this change could break it, numbered steps, and explicit pass/fail
+criteria. Same content carries into the PR body.>
 
 ## Documentation Updates
 

@@ -106,6 +106,9 @@ tooling — its CLI if one is available, or the creation URL most forges
 print when you push — following the repo's PR template and conventions if
 present, and report the URL to your human partner.
 
+The PR's Tests section must cover **both** what you ran and what you couldn't —
+see "The Tests Section" below.
+
 Keep the worktree — your human partner iterates on PR feedback there.
 
 ### Option 2: Keep As-Is
@@ -138,6 +141,68 @@ Then clean up the worktree (Step 6) and force-delete the branch:
 ```bash
 git branch -D <feature-branch>
 ```
+
+## The Tests Section
+
+A reviewer reads "Tests: all passing" as "this was verified." That is only half true
+whenever the environment couldn't run part of what matters — a headless container has no
+display, no simulator, no `/dev/kvm`. The Tests section therefore has two halves, and
+the second is what makes the first honest.
+
+```markdown
+## Tests
+
+### Verified here
+
+- `<command>` - <result, with numbers: 151 tests, 5 packages, 0 failures>
+- <manual check you actually performed, and how>
+
+### Needs manual verification
+
+Not runnable in this environment: <one line on what blocks it - e.g. built in a
+headless Linux container, no display and no simulator, so nothing visual or
+native-only can be exercised here>.
+
+**1. <What to check> - <why this change could break it>**
+
+1. <exact command to run>
+2. <exact action to take>
+3. <exact thing to look at>
+
+**Pass:** <observable criterion>
+**Fail:** <the specific wrong behavior to watch for>
+
+**2. <next item, same shape>**
+```
+
+Most of this is already written — pull it from the report's "Needs manual verification"
+section (writing-development-report) rather than reconstructing it. **Omit the second
+half entirely when there's nothing environment-blocked.** An empty or padded section
+trains reviewers to skip the heading, including on the PR where it matters.
+
+### What belongs in it
+
+Only checks that are **environment-blocked and relevant to this diff**. The bar is "this
+environment physically cannot run it," not "this was tedious to automate" — if it could
+be a test, write the test instead. See verification-before-completion for both guards.
+
+### Writing steps a reviewer can actually follow
+
+Assume they have the branch checked out and nothing else. Exact commands, not
+descriptions of commands. Name the URL, the screen, the element.
+
+```
+BAD:   Check that the drawer animation looks right on mobile.
+GOOD:  1. pnpm --filter mobile start --web
+       2. Open http://localhost:8081, narrow the window below 768px
+       3. Tap the hamburger at top-left
+       Pass: drawer slides in from the left over ~300ms, backdrop dims behind it
+       Fail: drawer jump-cuts into place, or the backdrop never appears
+```
+
+The pass/fail lines are the part that gets skipped and the part that carries the value —
+without them you've asked someone to look at a screen without saying what they're
+looking for, and any outcome will seem acceptable.
 
 ## Step 6: Cleanup Workspace
 
