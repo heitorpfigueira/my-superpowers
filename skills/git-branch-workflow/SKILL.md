@@ -38,6 +38,13 @@ digraph tiers {
 | Parent | `<type>-<topic>` where type is `feature`, `bugfix`, or `documentation` — a grandparent may hold several parents of the same type, each its own slice | Spec, plan, and the parent-level tests delineated for it | Yes | PR to its grandparent |
 | Child | `<parent>--<subtopic>` | The actual implementation commits | No, local only | Squash-merge to its parent |
 
+**Only the child tier is excluded from `origin`/GitHub.** Its local-only review happens
+on a local forge instead (see local-pull-requests), but that PR is never merged — it's a
+review artifact, and the actual integration is the squash-merge to the parent. Parent and
+grandparent branches are pushed to `origin` and land via real GitHub Pull Requests — that
+is the whole point of the tier structure, not something to route through the local forge
+too. Don't let the child tier's rule bleed upward.
+
 **Exception — hotfix:** an urgent fix skips the grandparent tier entirely. Create a `hotfix-<topic>` parent branch directly from `main`, work it exactly like any other parent branch (child branches, tests, review), and PR it straight to `main`.
 
 ## Branch Naming
@@ -155,13 +162,14 @@ For each functionality slice named in the plan:
    ```
    Child branch <name> is ready to squash-merge into <parent-kind>-<topic>. <N> commits, tests passing. Please review before I merge.
    ```
-6. Once approved, squash-merge into the parent and delete the child branch. The change description is committed **as part of the squash**, so it lands on the parent in the same commit as the work it describes:
+6. Once approved, squash-merge into the parent and delete the child branch. The change description is committed **as part of the squash**, so it lands on the parent in the same commit as the work it describes. Push the parent to `origin` right after — the parent is one of the tiers that always lives on `origin` (see the tier table above), so its remote copy should never sit stale between child merges:
    ```bash
    git checkout <release|patch>-<name>/<parent-kind>-<topic>
    git merge --squash <release|patch>-<name>/<parent-kind>-<topic>--<slug>
    git add docs/development/change/<parent-kind>-<topic>--<slug>.md
    git commit   # write a summary commit message using the same Why/What/Left off/Next shape
    git branch -D <release|patch>-<name>/<parent-kind>-<topic>--<slug>
+   git push origin <release|patch>-<name>/<parent-kind>-<topic>
    ```
 
 Repeat until every child branch named in the plan is merged.
