@@ -158,6 +158,10 @@ before execution begins, not one interrupt per discovery mid-plan. If the
 scan is clean, proceed without comment. The review loop remains the net for
 conflicts that only emerge from implementation.
 
+**If you are a developer agent under parallel-development,** this batched
+question goes to the core agent (`main`) via `SendMessage`, not directly to
+the human — wait to be resumed with the answer before dispatching Task 1.
+
 ## Model Selection
 
 Use the least powerful model that can handle each role to conserve cost and increase speed.
@@ -232,6 +236,13 @@ and fix-round diffs need it.
 - Record the implementer's agent identity from the dispatch result —
   fix-loop rounds 1-3 resume this agent.
 - Never dispatch multiple implementation subagents in parallel (conflicts).
+  This is scoped to the implementer/reviewer subagents *this* run of the
+  skill dispatches for its own tasks — it does not forbid several developer
+  agents, each running this skill for their own parent branch, from
+  operating at the same time (see parallel-development). Keep the two words
+  apart: a "subagent" here is always an implementer or reviewer this loop
+  spawned; a "developer agent" is never one, even though both are spawned
+  the same mechanical way.
 
 Template: [implementer-prompt.md](implementer-prompt.md)
 
@@ -319,7 +330,9 @@ Before the loop starts, two routes leave it immediately:
   what the plan's text requires — is the human's decision, like any plan
   contradiction: present the finding and the plan text, ask which governs.
   Do not dismiss the finding because the plan mandates it, and do not
-  dispatch a fix that contradicts the plan without asking.
+  dispatch a fix that contradicts the plan without asking. A developer
+  agent under parallel-development relays this to `main` via `SendMessage`
+  instead of asking directly, and waits to be resumed.
 Everything else enters the loop. A fix round is one fix dispatch plus one
 scoped re-review. Five rounds maximum per task:
 
@@ -373,6 +386,9 @@ the cross-task context the reviewer lacks:
   your human partner with the finding, the plan text it collides with, and
   the fix history. Parking a structural failure lets every dependent task
   build on it and hands the final review a problem it cannot fix either.
+  A developer agent under parallel-development reports this to `main` via
+  `SendMessage` rather than stopping into a direct question — the core
+  agent relays it and this developer agent stays paused until it hears back.
 
 Adjudicate only at the cap. Adjudicating earlier to end a loop is
 pre-judging with a different name. Every adjudication is a ledger entry —

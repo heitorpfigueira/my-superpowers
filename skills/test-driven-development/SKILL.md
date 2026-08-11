@@ -323,4 +323,7 @@ Production code → test exists and failed first
 Otherwise → not TDD
 ```
 
-No exceptions without your human partner's permission.
+No exceptions without your human partner's permission. A developer agent
+under parallel-development asking for that exception relays the ask via
+`SendMessage` to the core agent (`main`) rather than asking directly, and
+waits for the answer before proceeding either way.

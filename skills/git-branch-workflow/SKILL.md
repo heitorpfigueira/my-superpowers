@@ -38,6 +38,13 @@ digraph tiers {
 | Parent | `<type>-<topic>` where type is `feature`, `bugfix`, or `documentation` — a grandparent may hold several parents of the same type, each its own slice | Spec, plan, and the parent-level tests delineated for it | Yes | PR to its grandparent |
 | Child | `<parent>--<subtopic>` | The actual implementation commits | No, local only | Squash-merge to its parent |
 
+**Only the child tier is excluded from `origin`/GitHub.** Its local-only review happens
+on a local forge instead (see local-pull-requests), but that PR is never merged — it's a
+review artifact, and the actual integration is the squash-merge to the parent. Parent and
+grandparent branches are pushed to `origin` and land via real GitHub Pull Requests — that
+is the whole point of the tier structure, not something to route through the local forge
+too. Don't let the child tier's rule bleed upward.
+
 **Exception — hotfix:** an urgent fix skips the grandparent tier entirely. Create a `hotfix-<topic>` parent branch directly from `main`, work it exactly like any other parent branch (child branches, tests, review), and PR it straight to `main`.
 
 ## Branch Naming
@@ -65,6 +72,8 @@ release-<name>/feature-calendar-views
 ```
 
 A **new grandparent** is for a genuinely separate, unrelated body of work — not another slice of a release already underway. If it still belongs to the same release, it's a new parent under the existing grandparent (a new `<topic>`), not a new grandparent.
+
+**Building several parents at once:** by default, multiple parents under one grandparent are still built one at a time. If their specs and plans show no file overlap, they can instead be built concurrently — see parallel-development. That skill is also what makes worktree-per-parent mandatory rather than optional the moment two parents are actually in flight at once: two parents sharing a single checkout at the same time is a correctness bug, not a convenience trade-off.
 
 ## Step 1 — Open the work (grandparent + parent)
 
@@ -155,13 +164,16 @@ For each functionality slice named in the plan:
    ```
    Child branch <name> is ready to squash-merge into <parent-kind>-<topic>. <N> commits, tests passing. Please review before I merge.
    ```
-6. Once approved, squash-merge into the parent and delete the child branch. The change description is committed **as part of the squash**, so it lands on the parent in the same commit as the work it describes:
+
+   **If you are a developer agent under parallel-development**, this gate does not become a direct question to the human — `SendMessage` the core agent (`main`) with the same content and stop. The core agent relays it and returns your answer. Working solo (the interactive session, or a developer agent working alone), ask directly as above.
+6. Once approved, squash-merge into the parent and delete the child branch. The change description is committed **as part of the squash**, so it lands on the parent in the same commit as the work it describes. Push the parent to `origin` right after — the parent is one of the tiers that always lives on `origin` (see the tier table above), so its remote copy should never sit stale between child merges:
    ```bash
    git checkout <release|patch>-<name>/<parent-kind>-<topic>
    git merge --squash <release|patch>-<name>/<parent-kind>-<topic>--<slug>
    git add docs/development/change/<parent-kind>-<topic>--<slug>.md
    git commit   # write a summary commit message using the same Why/What/Left off/Next shape
    git branch -D <release|patch>-<name>/<parent-kind>-<topic>--<slug>
+   git push origin <release|patch>-<name>/<parent-kind>-<topic>
    ```
 
 Repeat until every child branch named in the plan is merged.
@@ -174,6 +186,8 @@ Once every child branch for this parent is merged and all relevant tests pass �
 2. **REQUIRED SUB-SKILL:** Use writing-development-report to write the summary of everything built and every decision made, saved to `docs/development/report/YYYY-MM-DD-<topic>-report.md`, committed to the parent branch.
 3. **REQUIRED SUB-SKILL:** Use finishing-a-development-branch to open the Pull Request from the parent branch to its grandparent.
 
+**If this grandparent already has another parent landed on it**, run that sibling parent's parent-level tests (Step 1.6) again before this one's PR opens — not just this parent's own tests. A merge can be textually clean and still break a sibling's contract, since nothing about a clean git merge proves the two parents' assumptions still hold together; the parent-level tests are what were written to catch exactly that. If they fail, this is a real cross-parent conflict — see parallel-development's integration-branch resolution, whether or not the parents were actually built concurrently.
+
 The grandparent itself moves to `main` via PR once every parent branch it needs is merged — that's the same finishing-a-development-branch flow, one tier up. A grandparent with only one parent can go to `main` as soon as that parent lands; one with several — whether different kinds (e.g. a `feature` and a follow-up `documentation` parent) or several same-kind slices of one big release — waits for all of them.
 
 ## Quick Reference
@@ -184,6 +198,7 @@ The grandparent itself moves to `main` via PR once every parent branch it needs 
 | New slice of work under existing grandparent | `<release\|patch>-<name>/<kind>-<topic>` | its grandparent | PR to grandparent |
 | Implementing one piece of a parent's plan | `<release\|patch>-<name>/<kind>-<topic>--<slug>` | its parent | squash-merge to parent (after human review) |
 | Urgent production fix | `hotfix-<topic>` | `main` | PR to `main` |
+| 2+ independent parent slices, building at the same time | see parallel-development | their grandparent | PR to grandparent, one per parent |
 
 ## Common Rationalizations
 
@@ -196,3 +211,4 @@ The grandparent itself moves to `main` via PR once every parent branch it needs 
 | "It's basically a feature, I'll skip the spec since it's small" | brainstorming already scales spec length to complexity — a small feature gets a few sentences, not a skipped step. |
 | "This is urgent, I'll skip straight to a child branch off main" | Hotfix still gets a parent branch (`hotfix-<topic>`) — it only skips the grandparent, not the tier structure or the review gate. |
 | "I'll write the report before all the child branches are merged, to save time" | The report summarizes what was actually built. Writing it early means rewriting it when the last child branch changes something. |
+| "These two parents merged cleanly, no need to re-run the other one's tests" | A clean git merge proves no textual overlap, not that the two parents' assumptions still hold together. Re-run the sibling's parent-level tests. |

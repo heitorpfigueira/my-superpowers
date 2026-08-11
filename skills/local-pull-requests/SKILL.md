@@ -27,6 +27,12 @@ local review."
 1. **Never push to `origin`.** `origin` is the public remote. The entire point is that
    this code does not go there. Push only to the review remote. If a command you are
    about to run contains `push origin`, stop.
+
+   **This rule is scoped to child branches only.** It does not extend to parent or
+   grandparent branches — those push to `origin` and land real GitHub PRs, per
+   `git-branch-workflow` and `finishing-a-development-branch`. Do not generalize "don't
+   push to origin" beyond the child branch this skill is reviewing; a parent/grandparent
+   branch that's ready to land is not a case for this skill at all.
 2. **Never create commits to make a PR work.** A pull request is a server-side
    comparison of two refs that already exist. If the branch has the commits you want
    reviewed, it is ready. Do not commit, amend, rebase, or squash unless asked.
@@ -187,6 +193,10 @@ git merge-tree --write-tree "$BASE_BRANCH" "$HEAD_BRANCH" >/dev/null 2>&1 \
 
 Then hand the PR URL to the human and **stop**. This is git-branch-workflow's review
 gate — it is a hard gate. Do not squash-merge on your own judgement that it looks fine.
+
+**If you are a developer agent under parallel-development**, "hand it to the human"
+means `SendMessage` the PR URL to the core agent (`main`) and stop — the core agent
+is what actually shows it to the human and relays the approval back.
 
 ## After approval
 
