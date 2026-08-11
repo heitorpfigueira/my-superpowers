@@ -16,7 +16,7 @@ Load plan, review critically, execute all tasks, report when complete.
 ## The Process
 
 ### Step 1: Load and Review Plan
-1. Ensure an isolated workspace: use using-git-worktrees to create one or verify the existing one
+1. Each task is one child branch under git-branch-workflow — check out (creating if needed) the first task's child branch per that skill's Step 2. If this plan exists outside that workflow, use using-git-worktrees for isolation instead.
 2. Read plan file
 3. Review critically - identify any questions or concerns about the plan
 4. If concerns: Raise them with your human partner before starting
@@ -61,4 +61,4 @@ After all tasks complete and verified:
 - Don't skip verifications
 - Reference skills when plan says to
 - Stop when blocked, don't guess
-- Never start implementation on main/master branch without explicit user consent
+- Never start implementation directly on a parent, grandparent, or main/master branch without explicit user consent — implementation belongs on a child branch

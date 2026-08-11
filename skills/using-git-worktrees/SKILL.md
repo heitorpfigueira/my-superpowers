@@ -9,6 +9,10 @@ description: Use when starting feature work that needs isolation from current wo
 
 Ensure work happens in an isolated workspace. Prefer your platform's native worktree tools. Fall back to manual git worktrees only when no native tool is available.
 
+**Relationship to git-branch-workflow:** that skill's grandparent/parent/child branches are plain git branches, not automatically worktrees — child branches in particular are meant to be quick, local, and disposable, and a branch switch is usually enough. Reach for this skill on top of that structure only when you actually need filesystem isolation (e.g. running two child branches' dev servers side by side), or when working outside git-branch-workflow entirely (a plan with no branch tiers behind it yet).
+
+**One mandatory case:** parallel-development always needs this skill — every parent branch a developer agent owns gets its own worktree before that developer agent is dispatched, never a shared checkout. That's not a convenience call the way the rest of this skill's guidance is; two developer agents in one checkout at the same time is a correctness bug. Prefer a native worktree tool there the same as anywhere else (Step 1a below).
+
 **Core principle:** Detect existing isolation first. Then use native tools. Then fall back to git. Never fight the harness.
 
 **Announce at start:** "I'm using the using-git-worktrees skill to set up an isolated workspace."

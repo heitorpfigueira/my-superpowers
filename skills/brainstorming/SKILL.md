@@ -9,6 +9,8 @@ Help turn ideas into fully formed designs and specs through natural collaborativ
 
 Start by understanding the current project context, then ask questions one at a time to refine the idea. Once you understand what you're building, present the design and get user approval.
 
+**Critical partner:** This dialogue is not a transcription service for whatever the user first describes. If their framing of the problem, a constraint they've stated, or an approach they favor has a real flaw, say so plainly and explain the flaw — before proposing alternatives, not instead of them. Certainty in how an idea is presented isn't evidence it's right. The design is still theirs to approve, but it should be approved with the actual tradeoffs on the table, not with objections you noticed and kept to yourself.
+
 <HARD-GATE>
 Do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until you have presented a design and the user has approved it. This applies to EVERY project regardless of perceived simplicity.
 </HARD-GATE>
@@ -23,12 +25,13 @@ You MUST create a task for each of these items and complete them in order:
 
 1. **Explore project context** — check files, docs, recent commits
 2. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
-3. **Propose 2-3 approaches** — with trade-offs and your recommendation
-4. **Present design** — in sections scaled to their complexity, get user approval after each section
-5. **Write design doc** — save to `docs/specs/YYYY-MM-DD-<topic>-design.md` and commit
-6. **Spec self-review** — quick inline check for placeholders, contradictions, ambiguity, scope (see below)
-7. **User reviews written spec** — ask user to review the spec file before proceeding
-8. **Transition to implementation** — invoke writing-plans skill to create implementation plan
+3. **Explore what's relevant beyond the core idea** — scope, market/tech research, impact analysis, architecture analysis, UI/UX analysis, ubiquitous-language terms — whichever of these actually apply (see below)
+4. **Propose 2-3 approaches** — with trade-offs and your recommendation
+5. **Present design** — in sections scaled to their complexity, get user approval after each section
+6. **Write design doc** — save to `docs/development/spec/YYYY-MM-DD-<topic>-spec.md` and commit
+7. **Spec self-review** — quick inline check for placeholders, contradictions, ambiguity, scope (see below)
+8. **User reviews written spec** — ask user to review the spec file before proceeding
+9. **Transition to implementation** — invoke writing-plans skill to create implementation plan
 
 ## Process Flow
 
@@ -36,6 +39,7 @@ You MUST create a task for each of these items and complete them in order:
 digraph brainstorming {
     "Explore project context" [shape=box];
     "Ask clarifying questions" [shape=box];
+    "Explore beyond core idea\n(scope/research/impact/\narchitecture/UI-UX/glossary)" [shape=box];
     "Propose 2-3 approaches" [shape=box];
     "Present design sections" [shape=box];
     "User approves design?" [shape=diamond];
@@ -45,7 +49,8 @@ digraph brainstorming {
     "Invoke writing-plans skill" [shape=doublecircle];
 
     "Explore project context" -> "Ask clarifying questions";
-    "Ask clarifying questions" -> "Propose 2-3 approaches";
+    "Ask clarifying questions" -> "Explore beyond core idea\n(scope/research/impact/\narchitecture/UI-UX/glossary)";
+    "Explore beyond core idea\n(scope/research/impact/\narchitecture/UI-UX/glossary)" -> "Propose 2-3 approaches";
     "Propose 2-3 approaches" -> "Present design sections";
     "Present design sections" -> "User approves design?";
     "User approves design?" -> "Present design sections" [label="no, revise"];
@@ -66,16 +71,32 @@ digraph brainstorming {
 - Check out the current project state first (files, docs, recent commits)
 - Before asking detailed questions, assess scope: if the request describes multiple independent subsystems (e.g., "build a platform with chat, file storage, billing, and analytics"), flag this immediately. Don't spend questions refining details of a project that needs to be decomposed first.
 - If the project is too large for a single spec, help the user decompose into sub-projects: what are the independent pieces, how do they relate, what order should they be built? Then brainstorm the first sub-project through the normal design flow. Each sub-project gets its own spec → plan → implementation cycle.
+- Decomposition here is only ever about the design conversation, never about parallelizing it: even when sub-projects turn out independent enough to *build* concurrently later (see parallel-development), you still brainstorm each one's spec through this same one-question-at-a-time dialogue with the human, one sub-project at a time — there's no such thing as running this conversation in parallel threads with one human. The independence question worth flagging now is a build-time one: "could these be implemented at the same time without touching the same files?" — note it in the spec if so, but don't let it change how this conversation runs.
 - For appropriately-scoped projects, ask questions one at a time to refine the idea
 - Prefer multiple choice questions when possible, but open-ended is fine too
 - Only one question per message - if a topic needs more exploration, break it into multiple questions
 - Focus on understanding: purpose, constraints, success criteria
+
+**Exploring beyond the core idea:**
+
+Once you understand the request, check which of these apply before jumping to approaches — not every idea needs all of them, and forcing one that doesn't fit wastes the user's time as surely as skipping one that does:
+
+- **Scope** — already covered above (decomposition into sub-projects). Always relevant.
+- **Market research** — does this compete with or resemble something users already know? Does that shape expectations for how it should behave?
+- **Tech research** — is there a library, service, or pattern that already solves part of this? Worth a quick look before designing from scratch.
+- **Impact analysis** — what existing behavior, data, or other features does this touch or put at risk? This list is what the report and the final review check against later, so name it now rather than discovering it mid-implementation.
+- **Architecture analysis** — does this fit the current architecture cleanly, or does it strain a boundary that's worth naming before committing to an approach?
+- **UI/UX analysis** — for anything user-facing, how does this fit the existing interaction patterns? Sketch the flow in words even without a mockup.
+- **Ubiquitous language** — did this discussion produce or rely on a term that isn't already defined? Note it now so it makes it into the glossary.
+
+Do these inline, conversationally, as part of refining the idea — not as a separate interrogation. When one of them produces something worth keeping past this spec (a tech evaluation, an architecture note, a new glossary term, a business rule), use writing-documentation to record it in `docs/` alongside the spec, not just inside it — the spec is this unit of work's record, `docs/` is the project's.
 
 **Exploring approaches:**
 
 - Propose 2-3 different approaches with trade-offs
 - Present options conversationally with your recommendation and reasoning
 - Lead with your recommended option and explain why
+- If the user already proposed an approach and it isn't the strongest option, don't quietly fold it in as "option 1" to avoid friction — name the weakness directly alongside what you'd do instead
 - YAGNI ruthlessly - remove unnecessary features from every approach and design
 
 **Presenting the design:**
@@ -103,7 +124,7 @@ digraph brainstorming {
 
 **Documentation:**
 
-- Write the validated design (spec) to `docs/specs/YYYY-MM-DD-<topic>-design.md`
+- Write the validated design (spec) to `docs/development/spec/YYYY-MM-DD-<topic>-spec.md`
   - (User preferences for spec location override this default)
 - Use elements-of-style:writing-clearly-and-concisely skill if available
 - Commit the design document to git

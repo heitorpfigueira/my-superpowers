@@ -13,6 +13,8 @@ When you have multiple unrelated failures (different test files, different subsy
 
 **Core principle:** Dispatch one agent per independent problem domain. Let them work concurrently.
 
+**Not for parallel feature development.** This skill is for read-only investigation and fixes with no shared git state to manage — no branches, no worktrees, no merges. Parallel work that needs its own branch, its own worktree, and a human review gate before it lands is parallel-development instead, even if the underlying "independent domains, dispatch concurrently" instinct is the same one.
+
 ## When to Use
 
 ```dot

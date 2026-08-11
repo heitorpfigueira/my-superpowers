@@ -14,7 +14,9 @@ Execute plan by dispatching a fresh implementer subagent per task, a task review
 **Narration:** between tool calls, narrate at most one short line — the
 ledger and the tool results carry the record.
 
-**Continuous execution:** Do not pause to check in with your human partner between tasks. Execute all tasks from the plan without stopping. The only reasons to stop are: BLOCKED status you cannot resolve, ambiguity that genuinely prevents progress, or all tasks complete. "Should I continue?" prompts and progress summaries waste their time — they asked you to execute the plan, so execute it.
+**Continuous execution:** Do not pause to check in with your human partner between tasks for progress's sake. Execute all tasks from the plan without stopping to report status. The only reasons to stop are: BLOCKED status you cannot resolve, ambiguity that genuinely prevents progress, or all tasks complete. "Should I continue?" prompts and progress summaries waste their time — they asked you to execute the plan, so execute it. This governs pacing, not the workflow's actual review gates: every point below that calls for a human decision — the pre-flight conflict scan, "ask human partner which governs," a load-bearing finding at the breaker cap — is a hard stop. Never resolve one of those yourself and keep going; wait for the real answer.
+
+**Critical partner:** Executing fast is not the same as agreeing fast. When a plan's approach, a human partner's "which governs" call, or a scope decision looks wrong, say so plainly and explain why — before deferring, not instead of deferring. Certainty on their part isn't evidence of correctness; if you still think they're wrong after they've said so, say that too, once, with your reasoning. The decision is always theirs, but a decision made without your actual objection on the table isn't an informed one. Reflexive agreement is a failure mode here, not politeness.
 
 ## When to Use
 
@@ -109,10 +111,14 @@ digraph process {
 
 ## Setup
 
-Ensure the work happens in an isolated workspace: use
-using-git-worktrees to create one or verify the existing one.
-Never start implementation on a main/master branch without your human
-partner's explicit consent.
+Each task in the plan is one child branch under git-branch-workflow.
+Before dispatching a task's implementer, create (or check out) that
+task's child branch per that skill's Step 2 — don't dispatch onto
+whatever branch happens to be checked out. If this plan exists outside
+that workflow (no parent/grandparent branch behind it), fall back to
+using-git-worktrees for isolation instead. Never start implementation on
+a parent, grandparent, or main/master branch without your human partner's
+explicit consent.
 
 Conversation memory does not survive compaction. In real sessions,
 controllers that lost their place have re-dispatched entire completed task
@@ -150,9 +156,15 @@ Before dispatching Task 1, scan the plan once for conflicts:
 
 Present everything you find to your human partner as one batched question —
 each finding beside the plan text that mandates it, asking which governs —
-before execution begins, not one interrupt per discovery mid-plan. If the
-scan is clean, proceed without comment. The review loop remains the net for
-conflicts that only emerge from implementation.
+before execution begins, not one interrupt per discovery mid-plan. Include
+your own read on which side should win, if you have one; don't relay the
+conflict neutrally and leave them to reconstruct the tradeoff themselves. If
+the scan is clean, proceed without comment. The review loop remains the net
+for conflicts that only emerge from implementation.
+
+**If you are a developer agent under parallel-development,** this batched
+question goes to the core agent (`main`) via `SendMessage`, not directly to
+the human — wait to be resumed with the answer before dispatching Task 1.
 
 ## Model Selection
 
@@ -228,6 +240,13 @@ and fix-round diffs need it.
 - Record the implementer's agent identity from the dispatch result —
   fix-loop rounds 1-3 resume this agent.
 - Never dispatch multiple implementation subagents in parallel (conflicts).
+  This is scoped to the implementer/reviewer subagents *this* run of the
+  skill dispatches for its own tasks — it does not forbid several developer
+  agents, each running this skill for their own parent branch, from
+  operating at the same time (see parallel-development). Keep the two words
+  apart: a "subagent" here is always an implementer or reviewer this loop
+  spawned; a "developer agent" is never one, even though both are spawned
+  the same mechanical way.
 
 Template: [implementer-prompt.md](implementer-prompt.md)
 
@@ -313,9 +332,12 @@ Before the loop starts, two routes leave it immediately:
   never enter the loop.
 - A finding labeled plan-mandated — or any finding that conflicts with
   what the plan's text requires — is the human's decision, like any plan
-  contradiction: present the finding and the plan text, ask which governs.
-  Do not dismiss the finding because the plan mandates it, and do not
-  dispatch a fix that contradicts the plan without asking.
+  contradiction: present the finding and the plan text, ask which governs,
+  and say which one you'd pick and why. Do not dismiss the finding because
+  the plan mandates it, and do not
+  dispatch a fix that contradicts the plan without asking. A developer
+  agent under parallel-development relays this to `main` via `SendMessage`
+  instead of asking directly, and waits to be resumed.
 Everything else enters the loop. A fix round is one fix dispatch plus one
 scoped re-review. Five rounds maximum per task:
 
@@ -366,9 +388,13 @@ the cross-task context the reviewer lacks:
   a ruling that says it's real and deferred.
 - **Real and load-bearing** — a later task builds on it, or it reveals a
   plan defect: STOP. Append `Task <N>: BLOCKED — <reason>` and report to
-  your human partner with the finding, the plan text it collides with, and
-  the fix history. Parking a structural failure lets every dependent task
-  build on it and hands the final review a problem it cannot fix either.
+  your human partner with the finding, the plan text it collides with, the
+  fix history, and your own recommendation for how to resolve it. Parking a
+  structural failure lets every dependent task build on it and hands the
+  final review a problem it cannot fix either.
+  A developer agent under parallel-development reports this to `main` via
+  `SendMessage` rather than stopping into a direct question — the core
+  agent relays it and this developer agent stays paused until it hears back.
 
 Adjudicate only at the cap. Adjudicating earlier to end a loop is
 pre-judging with a different name. Every adjudication is a ledger entry —
@@ -441,8 +467,8 @@ Use finishing-a-development-branch.
 You: I'm using Subagent-Driven Development to execute this plan.
 
 [Setup: worktree verified]
-[Read plan file once: docs/plans/feature-plan.md]
-[Resolve workspace: scripts/sdd-workspace docs/plans/feature-plan.md — no ledger inside, fresh start]
+[Read plan file once: docs/development/plan/feature-plan.md]
+[Resolve workspace: scripts/sdd-workspace docs/development/plan/feature-plan.md — no ledger inside, fresh start]
 [Create todos for all tasks]
 
 Task 1: Hook installation script

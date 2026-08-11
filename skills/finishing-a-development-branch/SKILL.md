@@ -1,13 +1,15 @@
 ---
 name: finishing-a-development-branch
-description: Use when implementation is complete, all tests pass, and you need to decide how to integrate the work
+description: Use when a parent branch has every child branch merged and passing, or a grandparent branch has every parent branch merged and passing, or a hotfix branch is ready - opens the Pull Request that lands it one tier up (parent to grandparent, grandparent to main, hotfix to main). Not for child branches, which squash-merge inline as part of git-branch-workflow Step 2 and never reach this skill.
 ---
 
 # Finishing a Development Branch
 
 ## Overview
 
-**Core principle:** Verify tests → Detect environment → Present options → Execute choice → Clean up.
+**Core principle:** Verify tests → Detect environment → Determine what this branch lands on → Present options → Execute choice → Clean up.
+
+This skill lands a **parent** or **grandparent** branch (or a **hotfix**, which is parent-shaped but skips the grandparent tier) — see git-branch-workflow for the tier structure. Child branches don't reach this skill at all: they squash-merge into their parent inline, after a human review, as part of Step 2 of that workflow. If a parent branch is finishing, writing-development-report should already have run before this skill starts — its report is part of what the PR shows a reviewer.
 
 **Announce at start:** "I'm using the finishing-a-development-branch skill to complete this work."
 
@@ -35,45 +37,60 @@ GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
 WORKTREE_PATH=$(git rev-parse --show-toplevel)
 ```
 
-This determines which menu to show and how cleanup works:
+This determines how cleanup works (the menu itself, Step 4, is the same 2
+options either way):
 
-| State | Menu | Cleanup |
-|-------|------|---------|
-| `GIT_DIR == GIT_COMMON` (normal repo) | Standard 3 options | No worktree to clean up |
-| `GIT_DIR != GIT_COMMON`, named branch | Standard 3 options | Provenance-based (see Step 6) |
-| `GIT_DIR != GIT_COMMON`, detached HEAD | Reduced 2 options (no merge) | Externally managed — leave in place |
+| State | Cleanup |
+|-------|---------|
+| `GIT_DIR == GIT_COMMON` (normal repo) | No worktree to clean up |
+| `GIT_DIR != GIT_COMMON`, named branch | Provenance-based (see Step 6) |
+| `GIT_DIR != GIT_COMMON`, detached HEAD | Externally managed — leave in place |
 
 ## Step 3: Determine Base Branch
 
-The base branch is whatever this work forked from — usually named in the
-plan, the conversation, or the branch's upstream. If it is not already
-known, ask: "This branch split from <your best guess> - is that correct?"
-Confirm before merging: merging into the wrong base is expensive to undo.
+The branch name tells you the tier, and the tier tells you the base — no
+guessing needed:
+
+Check these shapes **in order** — `_base` is the deciding suffix, so test for it
+before the parent pattern, which otherwise also matches a grandparent:
+
+| Current branch shape | Tier | Lands on |
+|---|---|---|
+| `<release\|patch>-<name>/_base` | Grandparent | `main` |
+| `<release\|patch>-<name>/<feature\|bugfix\|documentation>-<topic>` | Parent | `<release\|patch>-<name>/_base` (its grandparent) |
+| `hotfix-<topic>` | Hotfix (parent-tier, no grandparent) | `main` |
+| `<parent>--<slug>` (contains `--`) | Child | Not this skill — squash-merges into its parent inline, per git-branch-workflow Step 2 |
+
+Worked example: `release-web-calendar/feature-calendar-views` is a parent, so it
+lands on `release-web-calendar/_base` — **not** on `main`.
+
+```bash
+BRANCH=$(git branch --show-current)
+```
+
+If `$BRANCH` doesn't match any of these shapes, this isn't a
+git-branch-workflow branch — fall back to asking: "This branch split from
+<your best guess> - is that correct?" Either way, confirm the base out loud
+before merging: merging into the wrong base is expensive to undo.
 
 ## Step 4: Present Options
 
-**Normal repo and named-branch worktree — present exactly these 3 options:**
+Parent, grandparent, and hotfix branches always land via Pull Request —
+that's the point of the tier structure: every step up gets a reviewable
+artifact, not a silent local merge. So the menu is the same 2 options
+regardless of worktree state:
 
 ```
 Implementation complete. What would you like to do?
 
-1. Merge back to <base-branch> locally
-2. Push and create a Pull Request
-3. Keep the branch as-is (I'll handle it later)
+1. Push and create a Pull Request to <base-branch>
+2. Keep the branch as-is (I'll handle it later)
 
 Which option?
 ```
 
-**Detached HEAD — present exactly these 2 options:**
-
-```
-Implementation complete. You're on a detached HEAD (externally managed workspace).
-
-1. Push as new branch and create a Pull Request
-2. Keep as-is (I'll handle it later)
-
-Which option?
-```
+**Detached HEAD** (externally managed workspace) uses the same 2 options,
+just naming the branch explicitly on push (see Step 5).
 
 Present the menu exactly as written — concise, with every option coming
 from the list above. Discarding the work happens only in response to your
@@ -81,36 +98,14 @@ human partner explicitly asking for it (see "If your human partner asks to
 discard the work" below). Wait for their answer; the integration decision
 is theirs.
 
+**If you are a developer agent under parallel-development** finishing your
+own parent branch, this menu does not go to the human directly — `SendMessage`
+the core agent (`main`) with the same menu and wait to be resumed with the
+choice.
+
 ## Step 5: Execute Choice
 
-### Option 1: Merge Locally
-
-```bash
-# Get main repo root for CWD safety
-MAIN_ROOT=$(git -C "$(git rev-parse --git-common-dir)/.." rev-parse --show-toplevel)
-cd "$MAIN_ROOT"
-
-# Merge first — verify success before removing anything
-git checkout <base-branch>
-git pull
-git merge <feature-branch>
-
-# Verify tests on merged result
-<test command>
-```
-
-If tests fail on the merged result: stop, leave the worktree and branch in
-place, and investigate — nothing has been pushed, so the merge is local
-and recoverable.
-
-Once the merged result is green: clean up the worktree (Step 6), then
-delete the branch:
-
-```bash
-git branch -d <feature-branch>
-```
-
-### Option 2: Push and Create PR
+### Option 1: Push and Create PR
 
 ```bash
 git push -u origin <feature-branch>
@@ -123,16 +118,23 @@ tooling — its CLI if one is available, or the creation URL most forges
 print when you push — following the repo's PR template and conventions if
 present, and report the URL to your human partner.
 
+Two sections of the body have required shapes: **Impact Analysis** (what this touches
+beyond its own feature, security first) and **Tests** (both what you ran and what you
+couldn't). See the two sections below.
+
 Keep the worktree — your human partner iterates on PR feedback there.
 
-### Option 3: Keep As-Is
+### Option 2: Keep As-Is
 
 Report: "Keeping branch <name>. Worktree preserved at <path>."
 
 ### If your human partner asks to discard the work
 
 This path exists only as a response to an explicit request to throw the
-work away. Confirm first:
+work away. A developer agent under parallel-development routes this whole
+exchange through `SendMessage` to the core agent rather than confirming
+directly — the literal `discard` confirmation still has to come from the
+human, just relayed. Confirm first:
 
 ```
 This will permanently delete:
@@ -156,13 +158,122 @@ Then clean up the worktree (Step 6) and force-delete the branch:
 git branch -D <feature-branch>
 ```
 
+## The Impact Analysis Section
+
+The PR body carries an **Impact Analysis** covering what this work touches beyond its
+own feature — security first, then the rest of the system.
+
+This is not a fresh analysis. `brainstorming` already produced one at spec time, and
+Step 3 of git-branch-workflow gates on "anything flagged in the spec's impact analysis."
+This section **carries that forward and reports what actually happened to it**: what the
+spec predicted, what turned out true, and what surfaced during implementation that
+nobody predicted. A PR whose impact analysis contradicts its spec's is a finding worth
+stating, not a discrepancy to smooth over.
+
+```markdown
+## Impact analysis
+
+**Security:** <auth/authz paths touched, new inputs crossing a trust boundary,
+secrets or tokens handled, new dependencies and why they're trustworthy, data
+exposed that wasn't before. "None - this is a <X> change that touches no
+<Y>" is a valid and useful answer when it's true.>
+
+**Blast radius:** <what else reads or depends on what changed - shared state,
+schemas, config, public interfaces. Name the callers you checked, not just
+the files you edited.>
+
+**Data and migrations:** <schema changes, backfills, anything irreversible or
+requiring ordered deploy. Omit if none.>
+
+**Compatibility:** <breaking changes to any consumed interface, and what
+depends on the old behavior. Omit if none.>
+
+**Diverged from the spec's impact analysis:** <anything the spec predicted
+that didn't hold, or that surfaced only during implementation. "Matched the
+spec" if it did.>
+```
+
+Same discipline as everything else here: **scoped to this diff, and honest about
+unknowns.** "I didn't check whether anything else calls this" is worth writing — it
+tells a reviewer exactly where to look. A generic paragraph that would be true of any
+PR is worse than no section, because it reads as though the question was considered.
+
+Drop a subsection entirely when it genuinely doesn't apply. Keep **Security** in every
+PR, even when the answer is "none" — an explicit "no security surface" is a claim
+someone made and can be challenged; an absent heading only means nobody looked.
+
+## The Tests Section
+
+A reviewer reads "Tests: all passing" as "this was verified." That is only half true
+whenever the environment couldn't run part of what matters — a headless container has no
+display, no simulator, no `/dev/kvm`. The Tests section therefore has two halves, and
+the second is what makes the first honest.
+
+```markdown
+## Tests
+
+### Verified here
+
+- `<command>` - <result, with numbers: 151 tests, 5 packages, 0 failures>
+- <manual check you actually performed, and how>
+
+### Needs manual verification
+
+Not runnable in this environment: <one line on what blocks it - e.g. built in a
+headless Linux container, no display and no simulator, so nothing visual or
+native-only can be exercised here>.
+
+**1. <What to check> - <why this change could break it>**
+
+1. <exact command to run>
+2. <exact action to take>
+3. <exact thing to look at>
+
+**Pass:** <observable criterion>
+**Fail:** <the specific wrong behavior to watch for>
+
+**2. <next item, same shape>**
+```
+
+Most of this is already written — pull it from the report's "Needs manual verification"
+section (writing-development-report) rather than reconstructing it. **Omit the second
+half entirely when there's nothing environment-blocked.** An empty or padded section
+trains reviewers to skip the heading, including on the PR where it matters.
+
+### What belongs in it
+
+Only checks that are **environment-blocked and relevant to this diff**. The bar is "this
+environment physically cannot run it," not "this was tedious to automate" — if it could
+be a test, write the test instead. See verification-before-completion for both guards.
+
+### Writing steps a reviewer can actually follow
+
+Assume they have the branch checked out and nothing else. Exact commands, not
+descriptions of commands. Name the URL, the screen, the element.
+
+```
+BAD:   Check that the drawer animation looks right on mobile.
+GOOD:  1. pnpm --filter mobile start --web
+       2. Open http://localhost:8081, narrow the window below 768px
+       3. Tap the hamburger at top-left
+       Pass: drawer slides in from the left over ~300ms, backdrop dims behind it
+       Fail: drawer jump-cuts into place, or the backdrop never appears
+```
+
+The pass/fail lines are the part that gets skipped and the part that carries the value —
+without them you've asked someone to look at a screen without saying what they're
+looking for, and any outcome will seem acceptable.
+
 ## Step 6: Cleanup Workspace
 
-**Runs for Option 1 and confirmed discards.** Options 2 and 3 always
-preserve the worktree. Both callers have already changed directory to the
-main repo root — worktree removal must run from outside the worktree —
-and use the `GIT_DIR`/`GIT_COMMON`/`WORKTREE_PATH` values captured in
-Step 2, from before that directory change.
+**Runs only for confirmed discards.** Both Option 1 (Push and Create PR)
+and Option 2 (Keep As-Is) preserve the worktree — a pushed branch needs it
+for PR feedback, and "keep as-is" means exactly that. Cleanup only happens
+when your human partner explicitly asked to discard the work (see above).
+That caller has already changed directory to the main repo root — worktree
+removal must run from outside the worktree — and uses the
+`GIT_DIR`/`GIT_COMMON`/`WORKTREE_PATH` values captured in Step 2, from
+before that directory change.
 
 **If `GIT_DIR == GIT_COMMON`:** Normal repo, no worktree to clean up. Done.
 
@@ -179,12 +290,11 @@ place. If your platform provides a workspace-exit tool, use it.
 
 ## Quick Reference
 
-| Option | Merge | Push | Keep Worktree | Cleanup Branch |
-|--------|-------|------|---------------|----------------|
-| 1. Merge locally | yes | - | - | yes |
-| 2. Create PR | - | yes | yes | - |
-| 3. Keep as-is | - | - | yes | - |
-| Discard (explicit request only) | - | - | - | yes (force) |
+| Option | Push | Keep Worktree | Cleanup Branch |
+|--------|------|---------------|----------------|
+| 1. Create PR | yes | yes | - |
+| 2. Keep as-is | - | yes | - |
+| Discard (explicit request only) | - | - | yes (force) |
 
 ## Common Rationalizations
 
@@ -196,6 +306,6 @@ place. If your platform provides a workspace-exit tool, use it.
 | "'Yeah, get rid of it' counts as confirmation" | Only the typed word `discard` authorizes deletion. |
 | "The PR is up, so the worktree is clutter now" | PR feedback gets fixed in that worktree. It stays until the work lands. |
 | "This other worktree looks stale — I'll clean it too" | Clean up only worktrees under `.worktrees/` or `worktrees/`. Everything else belongs to the host. |
-| "The merged-result failure is probably flaky" | A failing merged result stops everything. Branch and worktree stay put while you investigate. |
-| "The base branch is obviously main" | Confirm the fork point or ask. Merging into the wrong base is expensive to undo. |
+| "I'll just merge this locally, it's faster than a PR" | Parent and grandparent branches land via Pull Request, always — that review artifact is the point of the tier structure, not an optional formality. |
+| "The base branch is obviously main" | The branch name shape (Step 3) determines the base — confirm it, don't guess from habit. Merging into the wrong base is expensive to undo. |
 | "The push was rejected — force-push will fix it" | A rejected push means the remote moved. Investigate; force-push only on your human partner's explicit request. |

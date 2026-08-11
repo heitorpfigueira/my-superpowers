@@ -11,16 +11,20 @@ Write comprehensive implementation plans assuming the engineer has zero context 
 
 Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
 
+Each task in this plan becomes one child branch under git-branch-workflow. The plan is what turns "here's the spec" into "here's the fixed list of child branches, in order, and what each one proves when it's done."
+
 **Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
 
-**Context:** If working in an isolated worktree, it should have been created via the `using-git-worktrees` skill at execution time.
+**Context:** This plan is written on a parent branch created by git-branch-workflow, off the approved spec from brainstorming. If for some reason no parent branch exists yet (plan being written outside that workflow), fall back to using-git-worktrees for isolation before writing any code.
 
-**Save plans to:** `docs/plans/YYYY-MM-DD-<feature-name>.md`
+**Save plans to:** `docs/development/plan/YYYY-MM-DD-<topic>-plan.md`
 - (User preferences for plan location override this default)
 
 ## Scope Check
 
 If the spec covers multiple independent subsystems, it should have been broken into sub-project specs during brainstorming. If it wasn't, suggest breaking this into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
+
+If you do end up with several sibling plans whose File Structure sections show no overlap, flag that they're candidates for concurrent execution — see parallel-development — rather than assuming they'll be built one after another.
 
 ## File Structure
 
@@ -32,6 +36,15 @@ Before defining tasks, map out which files will be created or modified and what 
 - In existing codebases, follow established patterns. If the codebase uses large files, don't unilaterally restructure - but if a file you're modifying has grown unwieldy, including a split in the plan is reasonable.
 
 This structure informs the task decomposition. Each task should produce self-contained changes that make sense independently.
+
+## Check for Code-Style Skills and Conventions
+
+Before writing a single code example, check for two things:
+
+1. **A personal or project skill about how code should be written** — naming conventions, preferred patterns, a style guide. If one applies, invoke it now and write every code example in this plan to match it, rather than writing generic examples and hoping a reviewer catches the mismatch later. Don't count on stumbling into this by way of the general "check for relevant skills" rule — that rule competes for attention against everything else this skill is asking you to do at the same time, so it's easy to satisfy in spirit while missing it in practice. Checking explicitly, here, is what actually makes it reliable.
+2. **`docs/coding/`** (written via writing-documentation from earlier work on this project) — conventions the project has already settled on. Treat these the same as an invoked skill: follow them, don't re-litigate them in this plan.
+
+If a task's implementation will need to make a real styling or convention decision that isn't covered by either — not a trivial one, a genuine "we haven't decided this yet" — flag it in the plan rather than picking silently, so the decision gets made once and then captured in `docs/coding/` instead of made fresh by every task that touches it.
 
 ## Task Right-Sizing
 
@@ -51,6 +64,20 @@ independently testable deliverable.
 - "Run the tests and make sure they pass" - step
 - "Commit" - step
 
+**Commit is a per-concern step, not a per-task step.** A task frequently
+bundles several independently-testable concerns (five schemas, four
+router resources, a set of sibling adapters) — that's normal, Task
+Right-Sizing above says as much. When it does, repeat the whole
+write-test → verify-fail → implement → verify-pass → commit cycle once
+per concern, with its own commit each time, rather than chaining every
+concern's implementation and deferring a single "Commit" step to the
+end of the task. git-branch-workflow requires atomic commits ("one
+concern per commit") on every child branch; a plan that only ever writes
+one terminal "Commit" step per task is what produces monolithic commits
+that violate that rule, no matter how many independent pieces the task
+actually contains. When laying out a task's steps, count its concerns
+first, then make sure "Commit" appears that many times.
+
 ## Plan Document Header
 
 **Every plan MUST start with this header:**
@@ -58,7 +85,7 @@ independently testable deliverable.
 ```markdown
 # [Feature Name] Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use subagent-driven-development (recommended) or executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use subagent-driven-development (recommended) or executing-plans to implement this plan task-by-task, within the child branch git-branch-workflow creates for each task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** [One sentence describing what this builds]
 
@@ -80,6 +107,14 @@ include this section.]
 
 ````markdown
 ### Task N: [Component Name]
+
+**Behavior & Intent:** [One or two sentences naming the observable
+behavior this task changes or adds, and why that's the right
+behavior — the same framing a good commit message uses. "Adds
+retry-with-backoff to the sync client so a flaky network doesn't
+surface as a user-facing failure" — not "implement retry logic."
+This is what the child branch's commits should be able to point
+back to.]
 
 **Files:**
 - Create: `exact/path/to/file.py`
@@ -134,6 +169,7 @@ Every step must contain the actual content an engineer needs. These are **plan f
 - "Similar to Task N" (repeat the code — the engineer may be reading tasks out of order)
 - Steps that describe what to do without showing how (code blocks required for code steps)
 - References to types, functions, or methods not defined in any task
+- A single "Commit" step placed after several independent concerns' implementation steps, instead of one "Commit" step per concern (see Bite-Sized Task Granularity) — this produces a non-atomic commit and breaks git-branch-workflow's one-concern-per-commit rule
 
 ## Self-Review
 
@@ -145,13 +181,15 @@ After writing the complete plan, look at the spec with fresh eyes and check the 
 
 **3. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 
+**4. Commit granularity:** For each task, count the independent concerns it bundles (separate schemas, separate routers, separate sibling files that don't depend on each other to be individually testable) and count its "Commit" steps. One terminal commit covering several concerns is a finding, not a style preference — split it into one commit per concern, per Bite-Sized Task Granularity.
+
 If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
 
 ## Execution Handoff
 
-After saving the plan, offer execution choice:
+After saving the plan, offer execution choice. If this plan is one of several independent sibling plans flagged in the Scope Check above, mention that up front — parallel-development is a third option, not a replacement for this choice on any single plan.
 
-**"Plan complete and saved to `docs/plans/<filename>.md`. Two execution options:**
+**"Plan complete and saved to `docs/development/plan/<filename>.md`. Two execution options:**
 
 **1. Subagent-Driven (recommended)** - I dispatch a fresh subagent per task, review between tasks, fast iteration
 
@@ -166,3 +204,7 @@ After saving the plan, offer execution choice:
 **If Inline Execution chosen:**
 - **REQUIRED SUB-SKILL:** Use executing-plans
 - Batch execution with checkpoints for review
+
+**If this plan has independent siblings and you want them built concurrently:**
+- **REQUIRED SUB-SKILL:** Use parallel-development instead, once every sibling plan is written and approved
+- One developer agent per plan, each running Subagent-Driven internally, in its own worktree

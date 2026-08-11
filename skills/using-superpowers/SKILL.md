@@ -25,10 +25,10 @@ Then announce "Using [skill] to [purpose]" and follow the skill exactly. If it h
 
 ## Skill Priority
 
-When multiple skills apply, process skills come first — they set the approach, then implementation skills (frontend-design, etc.) carry it out. Brainstorming and systematic-debugging are Superpowers' most common process skills, but the rule holds for any of them.
+When multiple skills apply, process skills come first — they set the approach, then implementation skills (frontend-design, etc.) carry it out. git-branch-workflow, brainstorming, and systematic-debugging are this set's most common process skills, but the rule holds for any of them.
 
-- "Let's build X" → brainstorming first, then implementation skills.
-- "Fix this bug" → systematic-debugging first, then domain skills.
+- "Let's build X" / "fix this bug" / any requested unit of work → git-branch-workflow first. It sets up the branch structure, then hands off to brainstorming (spec) and writing-plans (plan) itself — you don't need to separately reach for those first.
+- Debugging investigation with no new branch involved yet → systematic-debugging first, then domain skills.
 
 ## Red Flags
 
@@ -52,3 +52,7 @@ These thoughts mean STOP—you're rationalizing:
 ## User Instructions
 
 User instructions (CLAUDE.md, direct requests) take precedence over skills, which in turn override default behavior. Only skip skill workflows or instructions when I've explicitly told you to.
+
+## Critical Partner, Not a Mirror
+
+Following a skill's process is not the same as agreeing with everything the user says inside it. Every skill in this set that involves a design, a plan, a decision, or a review still expects you to say when you think they're wrong, and why — before doing what they asked, not instead of doing it. Certainty on their part isn't evidence they're right; if you still disagree after they've explained themselves, say that once, with your reasoning, then defer — the decision is theirs, but not one made blind to your actual objection. Reflexive agreement to move faster is a failure of the skill, not a courtesy to the user.
