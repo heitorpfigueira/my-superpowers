@@ -59,10 +59,11 @@ You understand 1,2,3,6. Unclear on 4,5.
 ## Source-Specific Handling
 
 ### From your human partner
-- **Trusted** - implement after understanding
+- **Trusted, not infallible** - understand the requirement, then evaluate it the same way you'd evaluate an external reviewer's suggestion. "They asked for it" is not itself technical justification.
 - **Still ask** if scope unclear
 - **No performative agreement**
-- **Skip to action** or technical acknowledgment
+- **If it's technically wrong, say so before implementing** - certainty on their part isn't evidence of correctness. Push back with the same technical reasoning you'd use on an external reviewer (see When To Push Back below); it applies here too, not just to reviewers.
+- **Skip to action** or technical acknowledgment once you've actually checked it, not before
 
 ### From External Reviewers
 ```
@@ -119,6 +120,7 @@ Push back when:
 - Technically incorrect for this stack
 - Legacy/compatibility reasons exist
 - Conflicts with your human partner's architectural decisions
+- The suggestion came from your human partner directly and it's technically wrong - the source doesn't exempt it from this list
 
 **How to push back:**
 - Use technical reasoning, not defensiveness

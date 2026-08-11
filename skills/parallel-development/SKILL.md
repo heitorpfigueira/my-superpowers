@@ -141,8 +141,11 @@ applies by default - relay, don't decide.
 
 **The core agent's job while developer agents run** is to sit on this relay:
 receive each message, surface it to you exactly as if it had arisen in the
-core agent's own execution, wait for your actual answer, then `SendMessage`
-the specific developer agent back to unblock it. Multiple developer agents
+core agent's own execution — including the developer agent's own
+recommendation when the underlying skill calls for one (subagent-driven-development's
+conflict scan and BLOCKED report both do), not stripped down to the bare
+finding — wait for your actual answer, then `SendMessage` the specific
+developer agent back to unblock it. Multiple developer agents
 finishing around the same time just means multiple relayed questions in
 sequence - nothing merges, and no menu resolves, without your explicit
 answer reaching the developer agent that asked.

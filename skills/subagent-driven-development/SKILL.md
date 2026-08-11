@@ -14,7 +14,9 @@ Execute plan by dispatching a fresh implementer subagent per task, a task review
 **Narration:** between tool calls, narrate at most one short line — the
 ledger and the tool results carry the record.
 
-**Continuous execution:** Do not pause to check in with your human partner between tasks. Execute all tasks from the plan without stopping. The only reasons to stop are: BLOCKED status you cannot resolve, ambiguity that genuinely prevents progress, or all tasks complete. "Should I continue?" prompts and progress summaries waste their time — they asked you to execute the plan, so execute it.
+**Continuous execution:** Do not pause to check in with your human partner between tasks for progress's sake. Execute all tasks from the plan without stopping to report status. The only reasons to stop are: BLOCKED status you cannot resolve, ambiguity that genuinely prevents progress, or all tasks complete. "Should I continue?" prompts and progress summaries waste their time — they asked you to execute the plan, so execute it. This governs pacing, not the workflow's actual review gates: every point below that calls for a human decision — the pre-flight conflict scan, "ask human partner which governs," a load-bearing finding at the breaker cap — is a hard stop. Never resolve one of those yourself and keep going; wait for the real answer.
+
+**Critical partner:** Executing fast is not the same as agreeing fast. When a plan's approach, a human partner's "which governs" call, or a scope decision looks wrong, say so plainly and explain why — before deferring, not instead of deferring. Certainty on their part isn't evidence of correctness; if you still think they're wrong after they've said so, say that too, once, with your reasoning. The decision is always theirs, but a decision made without your actual objection on the table isn't an informed one. Reflexive agreement is a failure mode here, not politeness.
 
 ## When to Use
 
@@ -154,9 +156,11 @@ Before dispatching Task 1, scan the plan once for conflicts:
 
 Present everything you find to your human partner as one batched question —
 each finding beside the plan text that mandates it, asking which governs —
-before execution begins, not one interrupt per discovery mid-plan. If the
-scan is clean, proceed without comment. The review loop remains the net for
-conflicts that only emerge from implementation.
+before execution begins, not one interrupt per discovery mid-plan. Include
+your own read on which side should win, if you have one; don't relay the
+conflict neutrally and leave them to reconstruct the tradeoff themselves. If
+the scan is clean, proceed without comment. The review loop remains the net
+for conflicts that only emerge from implementation.
 
 **If you are a developer agent under parallel-development,** this batched
 question goes to the core agent (`main`) via `SendMessage`, not directly to
@@ -328,8 +332,9 @@ Before the loop starts, two routes leave it immediately:
   never enter the loop.
 - A finding labeled plan-mandated — or any finding that conflicts with
   what the plan's text requires — is the human's decision, like any plan
-  contradiction: present the finding and the plan text, ask which governs.
-  Do not dismiss the finding because the plan mandates it, and do not
+  contradiction: present the finding and the plan text, ask which governs,
+  and say which one you'd pick and why. Do not dismiss the finding because
+  the plan mandates it, and do not
   dispatch a fix that contradicts the plan without asking. A developer
   agent under parallel-development relays this to `main` via `SendMessage`
   instead of asking directly, and waits to be resumed.
@@ -383,9 +388,10 @@ the cross-task context the reviewer lacks:
   a ruling that says it's real and deferred.
 - **Real and load-bearing** — a later task builds on it, or it reveals a
   plan defect: STOP. Append `Task <N>: BLOCKED — <reason>` and report to
-  your human partner with the finding, the plan text it collides with, and
-  the fix history. Parking a structural failure lets every dependent task
-  build on it and hands the final review a problem it cannot fix either.
+  your human partner with the finding, the plan text it collides with, the
+  fix history, and your own recommendation for how to resolve it. Parking a
+  structural failure lets every dependent task build on it and hands the
+  final review a problem it cannot fix either.
   A developer agent under parallel-development reports this to `main` via
   `SendMessage` rather than stopping into a direct question — the core
   agent relays it and this developer agent stays paused until it hears back.
