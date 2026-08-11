@@ -98,6 +98,11 @@ human partner explicitly asking for it (see "If your human partner asks to
 discard the work" below). Wait for their answer; the integration decision
 is theirs.
 
+**If you are a developer agent under parallel-development** finishing your
+own parent branch, this menu does not go to the human directly — `SendMessage`
+the core agent (`main`) with the same menu and wait to be resumed with the
+choice.
+
 ## Step 5: Execute Choice
 
 ### Option 1: Push and Create PR
@@ -126,7 +131,10 @@ Report: "Keeping branch <name>. Worktree preserved at <path>."
 ### If your human partner asks to discard the work
 
 This path exists only as a response to an explicit request to throw the
-work away. Confirm first:
+work away. A developer agent under parallel-development routes this whole
+exchange through `SendMessage` to the core agent rather than confirming
+directly — the literal `discard` confirmation still has to come from the
+human, just relayed. Confirm first:
 
 ```
 This will permanently delete:

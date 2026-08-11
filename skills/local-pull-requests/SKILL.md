@@ -194,6 +194,10 @@ git merge-tree --write-tree "$BASE_BRANCH" "$HEAD_BRANCH" >/dev/null 2>&1 \
 Then hand the PR URL to the human and **stop**. This is git-branch-workflow's review
 gate — it is a hard gate. Do not squash-merge on your own judgement that it looks fine.
 
+**If you are a developer agent under parallel-development**, "hand it to the human"
+means `SendMessage` the PR URL to the core agent (`main`) and stop — the core agent
+is what actually shows it to the human and relays the approval back.
+
 ## After approval
 
 Approval on the local PR is approval for Step 2.6's squash-merge. The child branch is

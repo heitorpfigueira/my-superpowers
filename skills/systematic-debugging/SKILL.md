@@ -207,7 +207,10 @@ You MUST complete each phase before proceeding to the next.
    - Are we "sticking with it through sheer inertia"?
    - Should we refactor architecture vs. continue fixing symptoms?
 
-   **Discuss with your human partner before attempting more fixes**
+   **Discuss with your human partner before attempting more fixes.** If you
+   are a developer agent under parallel-development debugging directly
+   (not a dispatched implementer subagent), relay this via `SendMessage`
+   to the core agent (`main`) instead of asking directly, and wait.
 
    This is NOT a failed hypothesis - this is a wrong architecture.
 

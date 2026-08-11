@@ -24,6 +24,8 @@ Each task in this plan becomes one child branch under git-branch-workflow. The p
 
 If the spec covers multiple independent subsystems, it should have been broken into sub-project specs during brainstorming. If it wasn't, suggest breaking this into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
 
+If you do end up with several sibling plans whose File Structure sections show no overlap, flag that they're candidates for concurrent execution — see parallel-development — rather than assuming they'll be built one after another.
+
 ## File Structure
 
 Before defining tasks, map out which files will be created or modified and what each one is responsible for. This is where decomposition decisions get locked in.
@@ -185,7 +187,7 @@ If you find issues, fix them inline. No need to re-review — just fix and move 
 
 ## Execution Handoff
 
-After saving the plan, offer execution choice:
+After saving the plan, offer execution choice. If this plan is one of several independent sibling plans flagged in the Scope Check above, mention that up front — parallel-development is a third option, not a replacement for this choice on any single plan.
 
 **"Plan complete and saved to `docs/development/plan/<filename>.md`. Two execution options:**
 
@@ -202,3 +204,7 @@ After saving the plan, offer execution choice:
 **If Inline Execution chosen:**
 - **REQUIRED SUB-SKILL:** Use executing-plans
 - Batch execution with checkpoints for review
+
+**If this plan has independent siblings and you want them built concurrently:**
+- **REQUIRED SUB-SKILL:** Use parallel-development instead, once every sibling plan is written and approved
+- One developer agent per plan, each running Subagent-Driven internally, in its own worktree
