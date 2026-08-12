@@ -202,3 +202,74 @@ digraph coordinator {
     "Consult local registry for the right server/skill" -> "Execute (TDD + verify)";
 }
 ```
+
+## Self-Setup
+
+`my-superpowers`'s own process skills are fixed at authoring time (the registry
+above). Everything else — what other skills are installed, what MCP servers are
+configured, what stack a given project uses — is specific to the machine and
+project this coordinator is running in, and gets recorded in
+`~/.claude/coordinator-registry.md` instead of in this file.
+
+**Why a separate file, and why that exact path:** this file (`SKILL.md`) is
+versioned — updating `my-superpowers` (pulling a new version of the repo,
+re-copying the skill directory) replaces it wholesale. A generated registry has to
+live somewhere that update can never touch, so it lives outside the
+`skills/coordinator/` directory entirely, at a fixed path directly under
+`~/.claude/`. That way a `my-superpowers` update, a straight re-copy of this skill,
+or even a full reinstall never wipes out what a machine has already learned about
+itself.
+
+**Registry format:**
+
+~~~markdown
+# Coordinator Registry
+
+_Generated and maintained by the coordinator skill. Safe to read; sections may be
+rewritten the next time the coordinator refreshes them._
+
+## Installed Skills
+
+| Skill | Description |
+|---|---|
+| <name> | <description, from that skill's own SKILL.md frontmatter> |
+
+## MCP Servers
+
+| Server | Notes |
+|---|---|
+| <name> | <what it's for> |
+
+## Projects
+
+### <project path or name>
+
+**Stack:** <inferred stack summary>
+
+**Workflow patterns:**
+- <pattern learned for this project>
+~~~
+
+**Trigger:** the first time this file loads and `~/.claude/coordinator-registry.md`
+is missing or empty, don't build it unprompted. Say so and offer:
+
+> "I don't have a local registry yet — want me to scan your installed skills and MCP
+> servers now?"
+
+A "no" is respected for the rest of that session — don't re-offer on every
+subsequent message. Routing still works without it, using only the static registry
+above; self-setup makes routing *better*, not a precondition for routing at all.
+
+**What "scan" means, for v1:**
+- **Skills** — enumerate what's installed under `~/.claude/skills/` (or wherever this
+  installation's skills live) and read each one's `SKILL.md` frontmatter (`name` +
+  `description`). That's enough to register it — no need to read the full body.
+- **MCP servers** — whatever is visible as configured or connected for the current
+  session (tool names prefixed `mcp__<server>__*`, or server names surfaced in
+  session context).
+
+How exactly to enumerate skills or recognize an MCP server's purpose from what's
+visible is a judgment call, not a fixed procedure — use your own understanding of
+what's in front of you, the same way you'd read any other unfamiliar directory or
+tool list. Detecting anything beyond skills and MCP servers (subagent types, hooks,
+slash commands) is out of scope for now; extend the same way if it's ever needed.
