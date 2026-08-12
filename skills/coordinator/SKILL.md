@@ -304,3 +304,14 @@ When routing inside a project, read the global sections of the registry plus *th
 project's own* section only. Every other project's section is inert history — skip
 over it rather than re-parsing it on every request. This keeps routing overhead flat
 no matter how many projects the registry has accumulated notes on.
+
+## Common Rationalizations
+
+| Excuse | Reality |
+|---|---|
+| "No registry exists, I'll just build one silently" | Offer first, on the first load only. A silent build is exactly the "assume rather than ask" failure the bootstrap trigger exists to prevent. |
+| "They said no to self-setup once, I'll offer again next message" | Respected for the rest of that session. Routing still works from the static registry alone — repeatedly re-offering is friction, not helpfulness. |
+| "I just installed a skill, I'll update the registry the next time it matters" | The trigger is "installed, discovered, or learned" — immediately, not deferred. A stale registry is a routing mistake waiting to happen. |
+| "This project's stack is obvious, no need to write it down" | Obvious to you this session isn't obvious to the next session, or to the static registry alone. Write the section. |
+| "I'll bake a stack-specific rule into this file since I use it on every project" | This file ships to other machines and other stacks. Stack-specific content belongs in the generated registry's per-project section, never here. |
+| "The other projects' sections might be useful context, I'll read them too" | They're inert history for routing purposes. Reading them on every request is exactly the unbounded-growth cost this design exists to avoid. |
