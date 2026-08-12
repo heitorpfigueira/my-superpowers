@@ -14,6 +14,13 @@ model, doc layout, and reporting step layered on top of the upstream methodology
 
 ## The workflow
 
+Before any of these: **coordinator** (optional) routes an incoming task to the right
+skill or MCP server in the first place — it isn't part of the numbered sequence
+below, it decides whether to start the sequence at all. See
+`skills/coordinator/SKILL.md`; it builds and maintains its own local registry of
+what else is installed the first time you use it, rather than shipping one that
+would only be accurate for one machine.
+
 1. **git-branch-workflow** — the entry point for any requested unit of work.
    Opens (or reuses) a `release`/`patch` grandparent branch and a
    `feature`/`bugfix`/`documentation` parent branch under it, then drives the
@@ -59,6 +66,10 @@ skills placed in `~/.claude/skills/`. To make them available in every project:
 ```bash
 cp -r skills/* ~/.claude/skills/
 ```
+
+⚠️ If you already have your own `coordinator` skill installed, this blanket copy
+will silently overwrite it. Copy skills individually, or exclude
+`skills/coordinator` from the copy, if you want to keep your existing one.
 
 (Or symlink individual skill directories if you'd rather manage updates from
 this repo directly.)
