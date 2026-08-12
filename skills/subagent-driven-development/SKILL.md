@@ -16,6 +16,16 @@ ledger and the tool results carry the record.
 
 **Continuous execution:** Do not pause to check in with your human partner between tasks for progress's sake. Execute all tasks from the plan without stopping to report status. The only reasons to stop are: BLOCKED status you cannot resolve, ambiguity that genuinely prevents progress, or all tasks complete. "Should I continue?" prompts and progress summaries waste their time — they asked you to execute the plan, so execute it. This governs pacing, not the workflow's actual review gates: every point below that calls for a human decision — the pre-flight conflict scan, "ask human partner which governs," a load-bearing finding at the breaker cap — is a hard stop. Never resolve one of those yourself and keep going; wait for the real answer.
 
+**Exception — code review is never skipped for pace.** "Continuous
+execution" means moving from task to task without idle check-ins, not
+moving from task to task without review. Every task still gets its task
+reviewer dispatch, every fix round still gets its scoped re-review, and the
+final whole-branch review still runs after the last task — dispatching them
+and waiting for the verdict is what continuous execution looks like here,
+not a pause it excuses you from. Do not mark a task complete, and do not
+start the next one, ahead of a clean review or a properly
+parked/adjudicated finding.
+
 **Critical partner:** Executing fast is not the same as agreeing fast. When a plan's approach, a human partner's "which governs" call, or a scope decision looks wrong, say so plainly and explain why — before deferring, not instead of deferring. Certainty on their part isn't evidence of correctness; if you still think they're wrong after they've said so, say that too, once, with your reasoning. The decision is always theirs, but a decision made without your actual objection on the table isn't an informed one. Reflexive agreement is a failure mode here, not politeness.
 
 ## When to Use

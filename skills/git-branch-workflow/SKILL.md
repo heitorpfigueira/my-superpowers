@@ -160,7 +160,11 @@ For each functionality slice named in the plan:
    Step 2.2. Omit if genuinely nothing.>
    ```
 
-   **Publish it.** If the project has a local forge configured, use the **local-pull-requests** skill — it opens a real PR with a file-by-file diff, using this description as the body. If it doesn't, deliver the same description in chat. The gate is unconditional; only the delivery differs:
+   **Publish it.** Check whether a local forge is configured — run local-pull-requests'
+   detection step rather than assuming either way. If one is configured, use the
+   **local-pull-requests** skill — it opens a real PR with a file-by-file diff, using
+   this description as the body. If it genuinely isn't configured, deliver the same
+   description in chat. The gate is unconditional; only the delivery differs:
    ```
    Child branch <name> is ready to squash-merge into <parent-kind>-<topic>. <N> commits, tests passing. Please review before I merge.
    ```

@@ -1,6 +1,6 @@
 ---
 name: local-pull-requests
-description: Use when a branch needs pull-request review but must not reach a public remote - child branches under git-branch-workflow, or any code that cannot leave the machine. Opens a GitHub-style PR on a self-hosted Forgejo/Gitea running locally. Optional - if the project has no local forge, git-branch-workflow's review gate falls back to delivering the same description in chat.
+description: Use to run git-branch-workflow's child-branch review gate as a real Pull Request instead of a chat message, whenever a local forge is configured for the project - the default way to review a child branch, not a special case reserved for code that must not reach a public remote (that's just one reason a project might set one up). Opens a GitHub-style PR on a self-hosted Forgejo/Gitea running locally. Optional - if the project has no local forge, git-branch-workflow's review gate falls back to delivering the same description in chat.
 ---
 
 # Local Pull Requests
@@ -11,16 +11,49 @@ git-branch-workflow's child branches never reach `origin` — they squash-merge 
 their parent and disappear. But its Step 2 review gate is a **hard gate**, and a
 one-line "please review" in chat is a poor way to review a real diff. A local forge
 closes that gap: a GitHub-style PR, with a file-by-file diff and inline comments, for
-a branch that never leaves the machine.
+every child branch, sensitive or not.
 
-**This skill is optional.** It describes one way to run the review gate, not a
-requirement of the workflow. If the project has no local forge configured, the gate
-still happens — git-branch-workflow just delivers the same change description in chat
-and waits for approval there. **The description is identical either way**; only the
-delivery differs.
+**Not just for code that can't leave the machine.** That property (a local forge
+never sends the diff to a public remote) makes this the right call for genuinely
+sensitive code, but it's one reason to set a forge up, not the qualifying condition
+for using this skill once one exists. If a local forge is configured for the project,
+it's the default way to run the child-branch review gate, full stop — an ordinary
+feature branch gets the same better review experience a security-sensitive one would.
+
+**This skill is optional in the sense that no forge is required.** It describes one
+way to run the review gate, not a requirement of the workflow. If the project has no
+local forge configured, the gate still happens — git-branch-workflow just delivers
+the same change description in chat and waits for approval there. **The description
+is identical either way**; only the delivery differs. But "optional" is about whether
+a forge exists, not about whether to use one that does — see Detecting a Configured
+Forge below.
 
 **Announce at start:** "I'm using the local-pull-requests skill to open this branch for
 local review."
+
+## Detecting a Configured Forge
+
+Every time git-branch-workflow's review gate fires, check for a forge — don't default to
+chat delivery without checking, and don't rely on remembering from earlier in a longer
+session if that memory might be stale:
+
+1. **A `review` remote already exists** (`git remote get-url review` succeeds) — this
+   repo was set up for local review before. Reuse it; skip straight to Environment below.
+2. **A forge address is declared** elsewhere you'd already know it — the project's own
+   instructions (CLAUDE.md, a project-level skill), or something your human partner told
+   you earlier this session (an `FJ`/`FORGEJO_URL` value, "the forge is at
+   `http://localhost:3000`"). Use it.
+3. **Neither exists:** ask once — "Do you have a local Forgejo/Gitea instance for this
+   project? If so, what's its address?" Remember the answer for the rest of the session:
+   a "no" means chat delivery for every remaining review gate this session, not just this
+   one; a "yes" means don't ask again either, just reuse the address.
+4. **Before trusting any address found this way, run the preflight below.** A stale or
+   wrong address is worse than no address — it produces a hang or a confusing error
+   instead of a clean fallback to chat.
+
+This turns git-branch-workflow's "if the project has a local forge configured" into a
+real, repeatable check instead of an assumption made once (or never made at all) and
+carried forward regardless of whether it's still true.
 
 ## Hard rules
 
@@ -223,3 +256,4 @@ under `docs/development/change/` and the squash commit on the parent.
 | "`mergeable: false` means I set it up wrong" | It usually means a genuine conflict with the base. Verify locally before reporting either. |
 | "The PR is open, so I can merge once tests pass" | The gate is human approval, not green tests. Stop and wait. |
 | "No local forge configured, so skip the review gate" | The gate is unconditional. Without a forge, deliver the same description in chat and wait. |
+| "No forge was mentioned, so there's probably none" | Run the detection check (above) every time — don't infer "no forge" from silence. A `review` remote or an earlier-declared address means one exists whether or not it comes up again. |
