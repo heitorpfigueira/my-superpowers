@@ -273,3 +273,13 @@ visible is a judgment call, not a fixed procedure — use your own understanding
 what's in front of you, the same way you'd read any other unfamiliar directory or
 tool list. Detecting anything beyond skills and MCP servers (subagent types, hooks,
 slash commands) is out of scope for now; extend the same way if it's ever needed.
+
+## Continuous Self-Update
+
+Once a registry exists, no separate prompt is needed to keep it current. Installing
+a new skill, noticing a new MCP server connect, or otherwise learning something new
+about the environment during ordinary work is itself the trigger to update the
+relevant part of `~/.claude/coordinator-registry.md` — immediately, as part of doing
+that work, not as a separate maintenance step requiring permission each time. This is
+local bookkeeping, not a destructive or user-visible action, so it doesn't need a
+confirmation gate the way discarding work or pushing to a remote would.
