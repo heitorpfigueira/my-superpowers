@@ -176,6 +176,8 @@ registry section (see Stack Adaptation), not here.
 digraph coordinator {
     rankdir=TB;
     "Task received" [shape=doublecircle];
+    "Fast-path eligible?" [shape=diamond];
+    "Do the work directly, no plan" [shape=box];
     "git-branch-workflow" [shape=box];
     "Creative or feature work?" [shape=diamond];
     "Bug or unexpected behavior?" [shape=diamond];
@@ -188,7 +190,9 @@ digraph coordinator {
     "Present Routing Plan / confirm" [shape=box];
     "Execute (TDD + verify)" [shape=doublecircle];
 
-    "Task received" -> "git-branch-workflow";
+    "Task received" -> "Fast-path eligible?";
+    "Fast-path eligible?" -> "Do the work directly, no plan" [label="yes"];
+    "Fast-path eligible?" -> "git-branch-workflow" [label="no"];
     "git-branch-workflow" -> "Creative or feature work?";
     "Creative or feature work?" -> "brainstorming" [label="yes"];
     "Creative or feature work?" -> "Bug or unexpected behavior?" [label="no"];
@@ -205,6 +209,7 @@ digraph coordinator {
     "Need a capability beyond process skills?" -> "Present Routing Plan / confirm" [label="no"];
     "Consult local registry for the right server/skill" -> "Present Routing Plan / confirm";
     "Present Routing Plan / confirm" -> "Execute (TDD + verify)";
+    "Do the work directly, no plan" -> "Execute (TDD + verify)";
 }
 ```
 
