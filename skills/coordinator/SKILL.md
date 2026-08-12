@@ -283,3 +283,24 @@ relevant part of `~/.claude/coordinator-registry.md` — immediately, as part of
 that work, not as a separate maintenance step requiring permission each time. This is
 local bookkeeping, not a destructive or user-visible action, so it doesn't need a
 confirmation gate the way discarding work or pushing to a remote would.
+
+## Stack Adaptation
+
+Nothing in this file names a specific library, framework, or MCP server — that's
+deliberate, so it stays true for an arbitrary Claude Code install. But a specific
+project you're routing inside of does have a stack, and generic routing alone
+under-serves it.
+
+When you do real routing work inside a project for the first time, notice what
+you can about its stack — dependency manifests, config files, the code already
+there — and write a section for it under `## Projects` in the registry, including
+workflow patterns that follow from that stack (the same shape as the generic
+patterns above, just specific to what this project actually uses). Refresh that
+project's section when the stack changes — a new dependency, a new framework config
+file appearing — the same way installing a new skill triggers a registry update
+above.
+
+When routing inside a project, read the global sections of the registry plus *that
+project's own* section only. Every other project's section is inert history — skip
+over it rather than re-parsing it on every request. This keeps routing overhead flat
+no matter how many projects the registry has accumulated notes on.
