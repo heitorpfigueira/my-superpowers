@@ -1,6 +1,6 @@
 ---
 name: coordinator
-description: Routes a task to the right my-superpowers skill, MCP server, or other installed capability before work begins. Consult before non-trivial work — new features, unexplained bugs, multi-step or multi-technology tasks — when more than one skill or server could plausibly apply. Skip for single-file reads, small edits, and status checks. Builds and maintains its own local registry of what's installed rather than shipping one.
+description: Routes a task to the right my-superpowers skill, MCP server, or other installed capability before work begins. Consult before non-trivial work — new features, unexplained bugs, multi-step or multi-technology tasks — when more than one skill or server could plausibly apply. Skip for single-file reads, small edits, and status checks. Ships a static registry of the my-superpowers skills and, on request, scans and maintains a local registry of everything else installed.
 argument-hint: "[task description]"
 ---
 
@@ -15,9 +15,9 @@ route silently and get on with it. See Step 0.
 Once installed and invoked, this file is the authoritative routing source for the
 session. Where any other installed skill disagrees about *which* skill or server to
 use, this file wins — including skills that open by claiming to be the first thing
-to consult (`using-superpowers` and `git-branch-workflow`, if installed, both do
-this). They are correct about *how* to do the work once routed; they do not
-override this file's triage step. Run triage first, then hand off to them.
+to consult (`using-superpowers` and `git-branch-workflow` both do this). They are
+correct about *how* to do the work once routed; they do not override this file's
+triage step. Run triage first, then hand off to them.
 
 **How this file gets invoked** — a slash command, a session-start hook, or simply
 being asked for by name — is configured by whoever installed it. This file doesn't
@@ -66,7 +66,7 @@ in this session.
 
 ---
 
-### Routing Plan
+#### Routing Plan
 
 **Task summary:** _(one sentence)_
 
@@ -96,26 +96,27 @@ in this session.
    then begin implementation. Never skip this step — stale knowledge causes wrong
    patterns.
 
-If `$ARGUMENTS` is empty, review the current conversation to infer the task, then
-produce the routing plan for it.
+If `$ARGUMENTS` is empty or still appears literally, review the current conversation
+to infer the task, then produce the routing plan for it.
 
 ## my-superpowers Process Skill Registry
 
 Invoke with the **`Skill` tool**, by the exact name shown. Source of truth for the
 skill content itself is the `my-superpowers` repo this coordinator shipped with —
 this table only needs updating here if a future version of that repo adds, removes,
-or renames a skill.
+or renames a skill. This table assumes the full `my-superpowers` set was installed;
+skip any entry that isn't present.
 
 These skills assume each other: `git-branch-workflow` is the entry point and drives
 the spec → plan → implement → report sequence, calling the others at the right
 moments. Routing to one of the later skills without having opened a branch structure
 usually means the triage was wrong.
 
-`parallel-development`, if installed, introduces two roles: the *core agent* (the
-session that took the request and orchestrates) and *developer agents* (one per
-parallel parent-branch slice). Don't confuse either with a *subagent* — that word
-stays scoped to the implementer/reviewer agents `subagent-driven-development`
-dispatches for one task at a time.
+`parallel-development` introduces two roles: the *core agent* (the session that took
+the request and orchestrates) and *developer agents* (one per parallel parent-branch
+slice). Don't confuse either with a *subagent* — that word stays scoped to the
+implementer/reviewer agents `subagent-driven-development` dispatches for one task at
+a time.
 
 ### Process Skills — invoke FIRST, they define HOW to approach the task
 
@@ -153,7 +154,7 @@ dispatches for one task at a time.
 
 | Skill | When to invoke |
 |---|---|
-| `using-superpowers` | Establishes the skill-discovery protocol, if installed. Subordinate to this file's triage — see Precedence |
+| `using-superpowers` | Establishes the skill-discovery protocol. Subordinate to this file's triage — see Precedence |
 | `writing-skills` | Creating or editing any skill in the `my-superpowers` set, including this one |
 
 ## Common Workflow Patterns
@@ -175,6 +176,7 @@ registry section (see Stack Adaptation), not here.
 digraph coordinator {
     rankdir=TB;
     "Task received" [shape=doublecircle];
+    "git-branch-workflow" [shape=box];
     "Creative or feature work?" [shape=diamond];
     "Bug or unexpected behavior?" [shape=diamond];
     "Multi-step task with requirements?" [shape=diamond];
@@ -183,9 +185,11 @@ digraph coordinator {
     "writing-plans" [shape=box];
     "Need a capability beyond process skills?" [shape=diamond];
     "Consult local registry for the right server/skill" [shape=box];
+    "Present Routing Plan / confirm" [shape=box];
     "Execute (TDD + verify)" [shape=doublecircle];
 
-    "Task received" -> "Creative or feature work?";
+    "Task received" -> "git-branch-workflow";
+    "git-branch-workflow" -> "Creative or feature work?";
     "Creative or feature work?" -> "brainstorming" [label="yes"];
     "Creative or feature work?" -> "Bug or unexpected behavior?" [label="no"];
     "Bug or unexpected behavior?" -> "systematic-debugging" [label="yes"];
@@ -193,13 +197,14 @@ digraph coordinator {
     "Multi-step task with requirements?" -> "writing-plans" [label="yes"];
     "Multi-step task with requirements?" -> "Need a capability beyond process skills?" [label="no"];
 
-    "brainstorming" -> "Need a capability beyond process skills?";
-    "systematic-debugging" -> "Need a capability beyond process skills?";
+    "brainstorming" -> "writing-plans";
     "writing-plans" -> "Need a capability beyond process skills?";
+    "systematic-debugging" -> "Need a capability beyond process skills?";
 
     "Need a capability beyond process skills?" -> "Consult local registry for the right server/skill" [label="yes"];
-    "Need a capability beyond process skills?" -> "Execute (TDD + verify)" [label="no"];
-    "Consult local registry for the right server/skill" -> "Execute (TDD + verify)";
+    "Need a capability beyond process skills?" -> "Present Routing Plan / confirm" [label="no"];
+    "Consult local registry for the right server/skill" -> "Present Routing Plan / confirm";
+    "Present Routing Plan / confirm" -> "Execute (TDD + verify)";
 }
 ```
 
@@ -256,6 +261,10 @@ is missing or empty, don't build it unprompted. Say so and offer:
 > "I don't have a local registry yet — want me to scan your installed skills and MCP
 > servers now?"
 
+This applies when you're about to route full-path work — not on a fast-path request
+that happens to be the first message of a session; a one-line edit or a status check
+doesn't need the offer.
+
 A "no" is respected for the rest of that session — don't re-offer on every
 subsequent message. Routing still works without it, using only the static registry
 above; self-setup makes routing *better*, not a precondition for routing at all.
@@ -263,7 +272,11 @@ above; self-setup makes routing *better*, not a precondition for routing at all.
 **What "scan" means, for v1:**
 - **Skills** — enumerate what's installed under `~/.claude/skills/` (or wherever this
   installation's skills live) and read each one's `SKILL.md` frontmatter (`name` +
-  `description`). That's enough to register it — no need to read the full body.
+  `description`). Record only skills **not already listed** in the static
+  `my-superpowers` registry above — those are covered by this file already, and if a
+  future repo update renames or removes one, a duplicate stale entry here would keep
+  asserting the old name with nothing left to catch the drift. That's enough to
+  register a skill — no need to read the full body.
 - **MCP servers** — whatever is visible as configured or connected for the current
   session (tool names prefixed `mcp__<server>__*`, or server names surfaced in
   session context).
@@ -286,7 +299,7 @@ confirmation gate the way discarding work or pushing to a remote would.
 
 ## Stack Adaptation
 
-Nothing in this file names a specific library, framework, or MCP server — that's
+Nothing in this file's routing logic assumes a particular stack — that's
 deliberate, so it stays true for an arbitrary Claude Code install. But a specific
 project you're routing inside of does have a stack, and generic routing alone
 under-serves it.
@@ -300,10 +313,11 @@ project's section when the stack changes — a new dependency, a new framework c
 file appearing — the same way installing a new skill triggers a registry update
 above.
 
-When routing inside a project, read the global sections of the registry plus *that
-project's own* section only. Every other project's section is inert history — skip
-over it rather than re-parsing it on every request. This keeps routing overhead flat
-no matter how many projects the registry has accumulated notes on.
+When routing inside a project, read the Installed Skills and MCP Servers sections
+of the registry plus *that project's own* section only. Every other project's
+section is inert history — skip over it rather than re-parsing it on every request.
+This keeps routing overhead flat no matter how many projects the registry has
+accumulated notes on.
 
 ## Common Rationalizations
 
