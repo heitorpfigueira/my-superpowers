@@ -6,14 +6,18 @@ argument-hint: "[task description]"
 
 # Coordinator
 
+**Host setup:** Before tool operations, read [platforms.md](../using-superpowers/references/platforms.md) once per session. It maps this unchanged workflow to Claude Code or Codex; it does not restart routing or override user instructions.
+
 You are acting as the agent coordinator. Your job is to analyze the task and
 produce a clear routing plan before any work begins — or, for small requests,
 route silently and get on with it. See Step 0.
 
 ## Precedence
 
-Once installed and invoked, this file is the authoritative routing source for the
-session. Where any other installed skill disagrees about *which* skill or server to
+Within my-superpowers, once installed and invoked, this file is the routing
+source for the session. User instructions and the host's higher-priority
+instructions and permissions take precedence. Where any other installed skill
+disagrees about *which* skill or server to
 use, this file wins — including skills that open by claiming to be the first thing
 to consult (`using-superpowers` and `git-branch-workflow` both do this). They are
 correct about *how* to do the work once routed; they do not override this file's
@@ -24,14 +28,14 @@ being asked for by name — is configured by whoever installed it. This file doe
 assume a particular trigger mechanism; it only assumes that once it's running, it
 routes.
 
-**`my-superpowers` process skills are ordinary Claude Code skills on disk**, invoked
-with the `Skill` tool by name — not through an MCP server. If this installation set
-them up some other way, the routing table later in this file still applies; only the
-invocation mechanism differs.
+**`my-superpowers` process skills are ordinary skills on disk.** Load them by
+name using the active host mapping and the installed catalog's exact paths.
+Claude Code may expose a `Skill` tool; Codex loads the SKILL.md instructions.
+The routing table is shared; only invocation and capability bindings differ.
 
 ## Task to Route
 
-$ARGUMENTS
+Use the task description supplied by the user or the current conversation.
 
 ## Step 0 — Triage (always do this first)
 
@@ -61,7 +65,7 @@ in this session.
 ### Full path
 
 1. Using the registries available to you — the static one later in this file, plus
-   `~/.claude/coordinator-registry.md` if it exists (see Self-Setup) — produce a
+   `COORDINATOR_REGISTRY` if it exists (see Self-Setup) — produce a
    **Routing Plan** in this exact format:
 
 ---
@@ -96,12 +100,12 @@ in this session.
    then begin implementation. Never skip this step — stale knowledge causes wrong
    patterns.
 
-If `$ARGUMENTS` is empty or still appears literally, review the current conversation
+If no task description was supplied explicitly, review the current conversation
 to infer the task, then produce the routing plan for it.
 
 ## my-superpowers Process Skill Registry
 
-Invoke with the **`Skill` tool**, by the exact name shown. Source of truth for the
+Load using the **active host mapping**, by the exact name shown. Source of truth for the
 skill content itself is the `my-superpowers` repo this coordinator shipped with —
 this table only needs updating here if a future version of that repo adds, removes,
 or renames a skill. This table assumes the full `my-superpowers` set was installed;
@@ -215,18 +219,23 @@ digraph coordinator {
 
 ## Self-Setup
 
+Resolve `COORDINATOR_REGISTRY` through platforms.md before reading or writing it.
+The live session catalog wins over cached entries. Keep project-only capabilities
+in the matching project section; refresh stale or removed entries when observed.
+
 `my-superpowers`'s own process skills are fixed at authoring time (the registry
 above). Everything else — what other skills are installed, what MCP servers are
 configured, what stack a given project uses — is specific to the machine and
 project this coordinator is running in, and gets recorded in
-`~/.claude/coordinator-registry.md` instead of in this file.
+`COORDINATOR_REGISTRY` instead of in this file.
 
 **Why a separate file, and why that exact path:** this file (`SKILL.md`) is
 versioned — updating `my-superpowers` (pulling a new version of the repo,
 re-copying the skill directory) replaces it wholesale. A generated registry has to
 live somewhere that update can never touch, so it lives outside the
 `skills/coordinator/` directory entirely, at a fixed path directly under
-`~/.claude/`. That way a `my-superpowers` update, a straight re-copy of this skill,
+the active host/profile's state directory (resolved by platforms.md). That way a
+`my-superpowers` update, a straight re-copy of this skill,
 or even a full reinstall never wipes out what a machine has already learned about
 itself.
 
@@ -238,17 +247,20 @@ itself.
 _Generated and maintained by the coordinator skill. Safe to read; sections may be
 rewritten the next time the coordinator refreshes them._
 
+**Host/profile:** <active host and profile>
+**Last observed:** <date>
+
 ## Installed Skills
 
-| Skill | Description |
-|---|---|
-| <name> | <description, from that skill's own SKILL.md frontmatter> |
+| Skill | Description | Source path | Scope |
+|---|---|---|---|
+| <name> | <frontmatter description> | <installed path> | <user or project> |
 
 ## MCP Servers
 
-| Server | Notes |
-|---|---|
-| <name> | <what it's for> |
+| Server | Notes | Scope | Last observed |
+|---|---|---|---|
+| <name> | <what it's for> | <user or project> | <date> |
 
 ## Projects
 
@@ -260,7 +272,7 @@ rewritten the next time the coordinator refreshes them._
 - <pattern learned for this project>
 ~~~
 
-**Trigger:** the first time this file loads and `~/.claude/coordinator-registry.md`
+**Trigger:** the first time this file loads and `COORDINATOR_REGISTRY`
 is missing or empty, don't build it unprompted. Say so and offer:
 
 > "I don't have a local registry yet — want me to scan your installed skills and MCP
@@ -275,8 +287,9 @@ subsequent message. Routing still works without it, using only the static regist
 above; self-setup makes routing *better*, not a precondition for routing at all.
 
 **What "scan" means, for v1:**
-- **Skills** — enumerate what's installed under `~/.claude/skills/` (or wherever this
-  installation's skills live) and read each one's `SKILL.md` frontmatter (`name` +
+- **Skills** — use the current session's installed catalog, including project and
+  user skills. When a filesystem scan is needed, use the active host's resolved
+  roots and read each one's `SKILL.md` frontmatter (`name` +
   `description`). Record only skills **not already listed** in the static
   `my-superpowers` registry above — those are covered by this file already, and if a
   future repo update renames or removes one, a duplicate stale entry here would keep
@@ -297,7 +310,7 @@ slash commands) is out of scope for now; extend the same way if it's ever needed
 Once a registry exists, no separate prompt is needed to keep it current. Installing
 a new skill, noticing a new MCP server connect, or otherwise learning something new
 about the environment during ordinary work is itself the trigger to update the
-relevant part of `~/.claude/coordinator-registry.md` — immediately, as part of doing
+relevant part of `COORDINATOR_REGISTRY` — immediately, as part of doing
 that work, not as a separate maintenance step requiring permission each time. This is
 local bookkeeping, not a destructive or user-visible action, so it doesn't need a
 confirmation gate the way discarding work or pushing to a remote would.
@@ -305,7 +318,7 @@ confirmation gate the way discarding work or pushing to a remote would.
 ## Stack Adaptation
 
 Nothing in this file's routing logic assumes a particular stack — that's
-deliberate, so it stays true for an arbitrary Claude Code install. But a specific
+deliberate, so it stays true for a supported Claude Code or Codex installation. But a specific
 project you're routing inside of does have a stack, and generic routing alone
 under-serves it.
 

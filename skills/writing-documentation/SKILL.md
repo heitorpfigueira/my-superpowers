@@ -5,6 +5,8 @@ description: Use whenever project knowledge needs to be captured somewhere more 
 
 # Writing Documentation
 
+**Host setup:** Before tool operations, read [platforms.md](../using-superpowers/references/platforms.md) once per session. It maps this unchanged workflow to Claude Code or Codex; it does not restart routing or override user instructions.
+
 ## Overview
 
 `docs/development/` (spec, plan, report) is a timeline — one dated file per unit of work, never edited again once written. `docs/` outside that folder is the opposite: a small set of living references, organized by category, that get updated in place as the project's understanding of itself changes. This skill is about the second kind.

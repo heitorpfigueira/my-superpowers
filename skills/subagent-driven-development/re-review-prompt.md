@@ -1,5 +1,7 @@
 # Scoped Re-Review Prompt Template
 
+Translate dispatch fields using [platforms.md](../using-superpowers/references/platforms.md).
+
 Use this template when dispatching a re-review after a fix round. The
 re-reviewer verifies the findings were addressed and checks the fix diff for
 new breakage. It is not a fresh review — the full review already happened.
@@ -8,10 +10,13 @@ new breakage. It is not a fresh review — the full review already happened.
 that the fix itself broke nothing.
 
 ```
-Subagent (general-purpose):
+Worker request (translate to the active host's dispatch schema):
+  controller: [CONTROLLER_ID — actual parent agent identity]
+  worktree: [ABSOLUTE_WORKTREE_PATH]
+  context: fresh task context; no inherited conversation history
   description: "Re-review Task N fix round R"
-  model: [MODEL — REQUIRED: choose per SKILL.md Model Selection; an omitted
-         model silently inherits the session's most expensive one]
+  model: [MODEL_SELECTION — choose per SKILL.md Model Selection and the host mapping;
+         record a host-controlled assignment if explicit selection is unavailable]
   prompt: |
     You are re-reviewing one task's fix round. A previous review produced
     findings; an implementer has attempted to fix them. Your job is to
@@ -92,7 +97,7 @@ Subagent (general-purpose):
 ```
 
 **Placeholders:**
-- `[MODEL]` — REQUIRED: reviewer model per SKILL.md Model Selection; scoped
+- `[MODEL_SELECTION]` — reviewer model or host-controlled assignment per SKILL.md Model Selection; scoped
   re-reviews of small fix diffs take a cheap-to-mid tier
 - `[BRIEF_FILE]` — the task brief file (same file the implementer worked from)
 - `[FINDINGS]` — the Critical/Important findings and spec gaps from the

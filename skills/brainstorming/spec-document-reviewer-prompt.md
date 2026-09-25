@@ -1,5 +1,7 @@
 # Spec Document Reviewer Prompt Template
 
+Translate dispatch fields using [platforms.md](../using-superpowers/references/platforms.md).
+
 Use this template when dispatching a spec document reviewer subagent.
 
 **Purpose:** Verify the spec is complete, consistent, and ready for implementation planning.
@@ -7,7 +9,10 @@ Use this template when dispatching a spec document reviewer subagent.
 **Dispatch after:** Spec document is written to docs/development/spec/
 
 ```
-Subagent (general-purpose):
+Worker request (translate to the active host's dispatch schema):
+  controller: [CONTROLLER_ID — actual parent agent identity]
+  worktree: [ABSOLUTE_WORKTREE_PATH]
+  context: fresh task context; no inherited conversation history
   description: "Review spec document"
   prompt: |
     You are a spec document reviewer. Verify this spec is complete and ready for planning.

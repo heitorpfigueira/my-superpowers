@@ -5,11 +5,16 @@ description: Use when creating new skills, editing existing skills, or verifying
 
 # Writing Skills
 
+**Host setup:** Before tool operations, read [platforms.md](../using-superpowers/references/platforms.md) once per session. It maps this unchanged workflow to Claude Code or Codex; it does not restart routing or override user instructions.
+
 ## Overview
 
 **Writing skills IS Test-Driven Development applied to process documentation.**
 
-**Personal skills live in `~/.claude/skills/` on Claude Code.**
+**Use the active host's skill locations.** Claude Code normally uses
+`~/.claude/skills/`; Codex's documented personal location is `~/.agents/skills/`.
+Managed installations can provide other paths; platforms.md and the live catalog
+resolve them. Keep one shared skill body and put host mechanics in references.
 
 You write test cases (pressure scenarios with subagents), watch them fail (baseline behavior), write the skill (documentation), watch tests pass (agents comply), and refactor (close loopholes).
 
@@ -17,7 +22,10 @@ You write test cases (pressure scenarios with subagents), watch them fail (basel
 
 **REQUIRED BACKGROUND:** You MUST understand test-driven-development before using this skill. That skill defines the fundamental RED-GREEN-REFACTOR cycle. This skill adapts TDD to documentation.
 
-**Official guidance:** For Anthropic's official skill authoring best practices, see anthropic-best-practices.md. This document provides additional patterns and guidelines that complement the TDD-focused approach in this skill.
+**Official guidance:** anthropic-best-practices.md is a retained Claude-specific
+reference, not the contract for every host. The Claude and Codex platform references
+link their respective official documentation. Keep provider-specific examples scoped
+to their provider; shared skills use the platform contract.
 
 ## What is a Skill?
 

@@ -1,12 +1,17 @@
 # Implementer Subagent Prompt Template
 
+Translate dispatch fields using [platforms.md](../using-superpowers/references/platforms.md).
+
 Use this template when dispatching an implementer subagent.
 
 ```
-Subagent (general-purpose):
+Worker request (translate to the active host's dispatch schema):
+  controller: [CONTROLLER_ID — actual parent agent identity]
+  worktree: [ABSOLUTE_WORKTREE_PATH]
+  context: fresh task context; no inherited conversation history
   description: "Implement Task N: [task name]"
-  model: [MODEL — REQUIRED: choose per SKILL.md Model Selection; an omitted
-         model silently inherits the session's most expensive one]
+  model: [MODEL_SELECTION — choose per SKILL.md Model Selection and the host mapping;
+         record a host-controlled assignment if explicit selection is unavailable]
   prompt: |
     You are implementing Task N: [task name]
 

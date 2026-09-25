@@ -5,6 +5,8 @@ description: Use when every child branch under a parent branch is merged and its
 
 # Writing a Development Report
 
+**Host setup:** Before tool operations, read [platforms.md](../using-superpowers/references/platforms.md) once per session. It maps this unchanged workflow to Claude Code or Codex; it does not restart routing or override user instructions.
+
 ## Overview
 
 The spec said what to build and why. The plan said how. Neither says what actually happened — where the plan was followed exactly, where reality forced a different call, and what the net result was. The report is that record, written once, at the close of a parent branch, from the vantage point of everything now being done.

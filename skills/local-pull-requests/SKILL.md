@@ -5,6 +5,8 @@ description: Use to run git-branch-workflow's child-branch review gate as a real
 
 # Local Pull Requests
 
+**Host setup:** Before tool operations, read [platforms.md](../using-superpowers/references/platforms.md) once per session. It maps this unchanged workflow to Claude Code or Codex; it does not restart routing or override user instructions.
+
 ## Overview
 
 git-branch-workflow's child branches never reach `origin` — they squash-merge into
@@ -40,7 +42,7 @@ session if that memory might be stale:
 1. **A `review` remote already exists** (`git remote get-url review` succeeds) — this
    repo was set up for local review before. Reuse it; skip straight to Environment below.
 2. **A forge address is declared** elsewhere you'd already know it — the project's own
-   instructions (CLAUDE.md, a project-level skill), or something your human partner told
+   instructions (CLAUDE.md/AGENTS.md, a project-level skill), or something your human partner told
    you earlier this session (an `FJ`/`FORGEJO_URL` value, "the forge is at
    `http://localhost:3000`"). Use it.
 3. **Neither exists:** ask once — "Do you have a local Forgejo/Gitea instance for this
@@ -228,8 +230,9 @@ Then hand the PR URL to the human and **stop**. This is git-branch-workflow's re
 gate — it is a hard gate. Do not squash-merge on your own judgement that it looks fine.
 
 **If you are a developer agent under parallel-development**, "hand it to the human"
-means `SendMessage` the PR URL to the core agent (`main`) and stop — the core agent
-is what actually shows it to the human and relays the approval back.
+means send the PR URL to the core agent (`CONTROLLER_ID`, supplied at dispatch)
+through the host messaging tool and stop. The core agent shows it to the human
+and relays the approval back.
 
 ## After approval
 
