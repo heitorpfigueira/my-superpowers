@@ -5,6 +5,8 @@ description: Use when encountering any bug, test failure, or unexpected behavior
 
 # Systematic Debugging
 
+**Host setup:** Before tool operations, read [platforms.md](../using-superpowers/references/platforms.md) once per session. It maps this unchanged workflow to Claude Code or Codex; it does not restart routing or override user instructions.
+
 ## Overview
 
 **Core principle:** ALWAYS find root cause before attempting fixes. Symptom fixes are failure.
@@ -213,8 +215,8 @@ You MUST complete each phase before proceeding to the next.
    issue is elsewhere, say that instead of defaulting to "should we
    refactor?" because three fixes failed. If you
    are a developer agent under parallel-development debugging directly
-   (not a dispatched implementer subagent), relay this via `SendMessage`
-   to the core agent (`main`) instead of asking directly, and wait.
+   (not a dispatched implementer subagent), relay this via the host messaging tool
+   to the core agent (`CONTROLLER_ID`, supplied at dispatch) instead of asking directly, and wait.
 
    This is NOT a failed hypothesis - this is a wrong architecture.
 

@@ -5,6 +5,8 @@ description: Use when executing implementation plans with independent tasks in t
 
 # Subagent-Driven Development
 
+**Host setup:** Before tool operations, read [platforms.md](../using-superpowers/references/platforms.md) once per session. It maps this unchanged workflow to Claude Code or Codex; it does not restart routing or override user instructions.
+
 Execute plan by dispatching a fresh implementer subagent per task, a task review (spec compliance + code quality) after each, and a broad whole-branch review at the end.
 
 **Why subagents:** You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need. This also preserves your own context for coordination work.
@@ -121,6 +123,14 @@ digraph process {
 
 ## Setup
 
+Resolve dispatch, messaging, model availability, and shell through platforms.md.
+Use the portable commands in shells.md for the artifact operations below. The
+Bash entry points remain available and delegate to the same Python implementation.
+Give every worker the worktree path and actual `CONTROLLER_ID` explicitly.
+Resolve every `scripts/...` path below against the installed skill directory, then
+invoke that absolute path from the task's repository/worktree. Do not change into
+the installed skill directory to run Git-dependent helpers.
+
 Each task in the plan is one child branch under git-branch-workflow.
 Before dispatching a task's implementer, create (or check out) that
 task's child branch per that skill's Step 2 — don't dispatch onto
@@ -173,7 +183,7 @@ the scan is clean, proceed without comment. The review loop remains the net
 for conflicts that only emerge from implementation.
 
 **If you are a developer agent under parallel-development,** this batched
-question goes to the core agent (`main`) via `SendMessage`, not directly to
+question goes to the core agent (`CONTROLLER_ID`, supplied at dispatch) via the host messaging tool, not directly to
 the human — wait to be resumed with the answer before dispatching Task 1.
 
 ## Model Selection
@@ -196,9 +206,13 @@ small fix diffs take a cheap-to-mid tier.
 **Fix-loop escalation (rounds 4-5)**: use a model at least one tier above
 the implementer that got stuck.
 
-**Always specify the model explicitly when dispatching a subagent.** An
-omitted model inherits your session's model — often the most capable and
-most expensive — which silently defeats this section.
+**Select the model explicitly when the host supports and permits it.** Map
+these roles to available choices rather than hardcoding provider model names.
+When the host controls selection, record that fact and use its assigned model
+only if it meets the role's requirements. If the required capability or escalation
+is unavailable, report the limitation per platforms.md; do not silently downgrade
+a final review or a fix-loop escalation. Never assume inheritance is the cheapest
+or most expensive choice without evidence.
 
 **Turn count beats token price.** Wall-clock and context cost scale with how
 many turns a subagent takes, and the cheapest models routinely take 2-3× the
@@ -264,7 +278,7 @@ Template: [implementer-prompt.md](implementer-prompt.md)
 
 Implementer subagents report one of four statuses. Handle each appropriately:
 
-**DONE:** Generate the review package (`scripts/review-package PLAN_FILE BASE HEAD`, from this skill's directory — it prints the unique file path it wrote; BASE is the commit you recorded before dispatching the implementer — never `HEAD~1`, which silently drops all but the last commit of a multi-commit task), then dispatch the task reviewer with the printed path.
+**DONE:** Generate the review package (`scripts/review-package PLAN_FILE BASE HEAD`, resolved as described in Setup — it prints the unique file path it wrote; BASE is the commit you recorded before dispatching the implementer — never `HEAD~1`, which silently drops all but the last commit of a multi-commit task), then dispatch the task reviewer with the printed path.
 
 **DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns are about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them and proceed to review.
 
@@ -292,9 +306,8 @@ needed.
 
 - Hand the reviewer its diff as a file: run this skill's
   `scripts/review-package PLAN_FILE BASE HEAD` and pass the reviewer the file path
-  it prints (or, without bash: `git log --oneline`, `git diff --stat`,
-  and `git diff -U10` for the range, redirected to one uniquely named
-  file). The output never enters your own context, and the reviewer sees
+  it prints (without Bash, use `python /path/to/sdd.py review PLAN_FILE BASE HEAD`).
+  The output never enters your own context, and the reviewer sees
   the commit list, stat summary, and full diff with context in one Read
   call. Use the BASE you recorded before dispatching the implementer —
   never `HEAD~1`, which silently truncates multi-commit tasks. Never
@@ -346,7 +359,7 @@ Before the loop starts, two routes leave it immediately:
   and say which one you'd pick and why. Do not dismiss the finding because
   the plan mandates it, and do not
   dispatch a fix that contradicts the plan without asking. A developer
-  agent under parallel-development relays this to `main` via `SendMessage`
+  agent under parallel-development relays this to `CONTROLLER_ID` via the host messaging tool
   instead of asking directly, and waits to be resumed.
 Everything else enters the loop. A fix round is one fix dispatch plus one
 scoped re-review. Five rounds maximum per task:
@@ -402,8 +415,8 @@ the cross-task context the reviewer lacks:
   fix history, and your own recommendation for how to resolve it. Parking a
   structural failure lets every dependent task build on it and hands the
   final review a problem it cannot fix either.
-  A developer agent under parallel-development reports this to `main` via
-  `SendMessage` rather than stopping into a direct question — the core
+  A developer agent under parallel-development reports this to `CONTROLLER_ID` via
+  the host messaging tool rather than stopping into a direct question — the core
   agent relays it and this developer agent stays paused until it hears back.
 
 Adjudicate only at the cap. Adjudicating earlier to end a loop is
@@ -452,7 +465,8 @@ finishing-a-development-branch presents the options.
 ## Finish
 
 When the final whole-branch review is clean and its fixes are merged,
-delete this plan's workspace (`rm -rf <workspace>`) — the git history is
+delete this plan's workspace with the validated portable command
+(`python /path/to/sdd.py clean PLAN_FILE`) — the git history is
 the record now. Sibling directories belong to other plans; leave them
 alone.
 

@@ -5,6 +5,8 @@ description: Use when facing 2+ independent tasks that can be worked on without 
 
 # Dispatching Parallel Agents
 
+**Host setup:** Before tool operations, read [platforms.md](../using-superpowers/references/platforms.md) once per session. It maps this unchanged workflow to Claude Code or Codex; it does not restart routing or override user instructions.
+
 ## Overview
 
 You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need. This also preserves your own context for coordination work.
@@ -76,7 +78,10 @@ Subagent (general-purpose): "Fix tool-approval-race-conditions.test.ts failures"
 # All three run concurrently.
 ```
 
-Multiple dispatch calls in one response = parallel execution. One per response = sequential.
+Use the host's supported asynchronous dispatch and wait mechanism within its
+capacity limit. Dispatch the independent tasks before awaiting their results when
+the host permits it; the number of calls in a message alone does not prove that
+they run concurrently. Supply explicit scope, working directory, and controller ID.
 
 ### 4. Review and Integrate
 

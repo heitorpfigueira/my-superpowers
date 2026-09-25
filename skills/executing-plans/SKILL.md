@@ -5,6 +5,8 @@ description: Use when you have a written implementation plan to execute in a sep
 
 # Executing Plans
 
+**Host setup:** Before tool operations, read [platforms.md](../using-superpowers/references/platforms.md) once per session. It maps this unchanged workflow to Claude Code or Codex; it does not restart routing or override user instructions.
+
 ## Overview
 
 Load plan, review critically, execute all tasks, report when complete.
@@ -28,7 +30,9 @@ For each task:
 1. Mark as in_progress
 2. Follow each step exactly (plan has bite-sized steps)
 3. Run verifications as specified
-4. Mark as completed
+4. Complete the applicable independent review and human gates before marking the
+   task completed. If independent review is unavailable, prepare its artifacts
+   and report the blocked gate; inline execution does not replace it with self-review.
 
 ### Step 3: Complete Development
 

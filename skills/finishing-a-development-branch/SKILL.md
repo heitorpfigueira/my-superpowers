@@ -5,6 +5,8 @@ description: Use when a parent branch has every child branch merged and passing,
 
 # Finishing a Development Branch
 
+**Host setup:** Before tool operations, read [platforms.md](../using-superpowers/references/platforms.md) once per session. It maps this unchanged workflow to Claude Code or Codex; it does not restart routing or override user instructions.
+
 ## Overview
 
 **Core principle:** Verify tests → Detect environment → Determine what this branch lands on → Present options → Execute choice → Clean up.
@@ -99,8 +101,8 @@ discard the work" below). Wait for their answer; the integration decision
 is theirs.
 
 **If you are a developer agent under parallel-development** finishing your
-own parent branch, this menu does not go to the human directly — `SendMessage`
-the core agent (`main`) with the same menu and wait to be resumed with the
+own parent branch, this menu does not go to the human directly — use the host messaging tool to notify
+the core agent (`CONTROLLER_ID`, supplied at dispatch) with the same menu and wait to be resumed with the
 choice.
 
 ## Step 5: Execute Choice
@@ -132,7 +134,7 @@ Report: "Keeping branch <name>. Worktree preserved at <path>."
 
 This path exists only as a response to an explicit request to throw the
 work away. A developer agent under parallel-development routes this whole
-exchange through `SendMessage` to the core agent rather than confirming
+exchange through the host messaging tool to the core agent rather than confirming
 directly — the literal `discard` confirmation still has to come from the
 human, just relayed. Confirm first:
 

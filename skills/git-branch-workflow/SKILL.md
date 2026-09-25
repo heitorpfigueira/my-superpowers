@@ -5,6 +5,8 @@ description: Use at the start of any requested piece of work in this project - b
 
 # Git Branch Workflow
 
+**Host setup:** Before tool operations, read [platforms.md](../using-superpowers/references/platforms.md) once per session. It maps this unchanged workflow to Claude Code or Codex; it does not restart routing or override user instructions.
+
 ## Overview
 
 Every piece of requested work moves through the same three branch tiers, in the same order, ending in a Pull Request. The tiers exist so that a reviewer (human or future you) can tell, from the branch name alone, how big a piece of work is and how far along it is — a `release-*`/`patch-*` grandparent is a body of work someone is tracking end-to-end, a `feature-*`/`bugfix-*`/`documentation-*` parent inside it is one deliverable slice of that body, and a child branch off a parent is one atomic, disposable unit of local history. A grandparent is bigger than a parent, so it routinely holds several parents — including several of the same kind — when the body of work naturally splits into multiple substantial slices.
@@ -169,7 +171,7 @@ For each functionality slice named in the plan:
    Child branch <name> is ready to squash-merge into <parent-kind>-<topic>. <N> commits, tests passing. Please review before I merge.
    ```
 
-   **If you are a developer agent under parallel-development**, this gate does not become a direct question to the human — `SendMessage` the core agent (`main`) with the same content and stop. The core agent relays it and returns your answer. Working solo (the interactive session, or a developer agent working alone), ask directly as above.
+   **If you are a developer agent under parallel-development**, this gate does not become a direct question to the human — use the host messaging tool to notify the core agent (`CONTROLLER_ID`, supplied at dispatch) with the same content and stop. The core agent relays it and returns your answer. Working solo (the interactive session, or a developer agent working alone), ask directly as above.
 6. Once approved, squash-merge into the parent and delete the child branch. The change description is committed **as part of the squash**, so it lands on the parent in the same commit as the work it describes. Push the parent to `origin` right after — the parent is one of the tiers that always lives on `origin` (see the tier table above), so its remote copy should never sit stale between child merges:
    ```bash
    git checkout <release|patch>-<name>/<parent-kind>-<topic>

@@ -1,5 +1,7 @@
 # Task Reviewer Prompt Template
 
+Translate dispatch fields using [platforms.md](../using-superpowers/references/platforms.md).
+
 Use this template when dispatching a task reviewer subagent. The reviewer
 reads the task's diff once and returns two verdicts: spec compliance and
 code quality.
@@ -8,10 +10,13 @@ code quality.
 more, nothing less) and is well-built (clean, tested, maintainable)
 
 ```
-Subagent (general-purpose):
+Worker request (translate to the active host's dispatch schema):
+  controller: [CONTROLLER_ID — actual parent agent identity]
+  worktree: [ABSOLUTE_WORKTREE_PATH]
+  context: fresh task context; no inherited conversation history
   description: "Review Task N (spec + quality)"
-  model: [MODEL — REQUIRED: choose per SKILL.md Model Selection; an omitted
-         model silently inherits the session's most expensive one]
+  model: [MODEL_SELECTION — choose per SKILL.md Model Selection and the host mapping;
+         record a host-controlled assignment if explicit selection is unavailable]
   prompt: |
     You are reviewing one task's implementation: first whether it matches its
     requirements, then whether it is well-built. This is a task-scoped gate,
@@ -166,7 +171,7 @@ Subagent (general-purpose):
 ```
 
 **Placeholders:**
-- `[MODEL]` — REQUIRED: reviewer model per SKILL.md Model Selection
+- `[MODEL_SELECTION]` — reviewer model or host-controlled assignment per SKILL.md Model Selection
 - `[BRIEF_FILE]` — REQUIRED: the task brief file (`scripts/task-brief PLAN N`
   prints the path; same file the implementer worked from)
 - `[GLOBAL_CONSTRAINTS]` — the binding requirements copied verbatim from

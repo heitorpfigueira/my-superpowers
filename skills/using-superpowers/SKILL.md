@@ -7,6 +7,8 @@ description: Use when starting any conversation - establishes how to find and us
 If you were dispatched as a subagent to execute a specific task, ignore this skill.
 </SUBAGENT-STOP>
 
+**Host setup:** Before tool operations, read [platforms.md](references/platforms.md) once per session. It maps this unchanged workflow to Claude Code or Codex; it does not restart routing or override user instructions.
+
 <EXTREMELY-IMPORTANT>
 If you think there is even a 1% chance a skill might apply to what you are doing, you ABSOLUTELY MUST invoke the skill.
 
@@ -17,7 +19,7 @@ This is not negotiable. You cannot rationalize your way out of this.
 
 ## The Rule
 
-**Invoke relevant or requested skills BEFORE any response or action** — including clarifying questions, exploring the codebase, or checking files. If it turns out wrong for the situation, you don't have to use it.
+**After coordinator triage (when installed), load relevant or requested skills before work** — including clarifying questions, exploring the codebase, or checking files. If it turns out wrong for the situation, you don't have to use it.
 
 **Before entering plan mode:** if you haven't already brainstormed, invoke the brainstorming skill first.
 
@@ -25,7 +27,7 @@ Then announce "Using [skill] to [purpose]" and follow the skill exactly. If it h
 
 ## Skill Priority
 
-When multiple skills apply, process skills come first — they set the approach, then implementation skills (frontend-design, etc.) carry it out. git-branch-workflow, brainstorming, and systematic-debugging are this set's most common process skills, but the rule holds for any of them.
+Honor coordinator's fast path and route each task once. When multiple skills apply, process skills come first — they set the approach, then implementation skills (frontend-design, etc.) carry it out. git-branch-workflow, brainstorming, and systematic-debugging are this set's most common process skills, but the rule holds for any of them.
 
 - "Let's build X" / "fix this bug" / any requested unit of work → git-branch-workflow first. It sets up the branch structure, then hands off to brainstorming (spec) and writing-plans (plan) itself — you don't need to separately reach for those first.
 - Debugging investigation with no new branch involved yet → systematic-debugging first, then domain skills.
@@ -51,7 +53,10 @@ These thoughts mean STOP—you're rationalizing:
 
 ## User Instructions
 
-User instructions (CLAUDE.md, direct requests) take precedence over skills, which in turn override default behavior. Only skip skill workflows or instructions when I've explicitly told you to.
+User instructions (direct requests and applicable CLAUDE.md/AGENTS.md guidance)
+take precedence over skills. Host system/developer instructions and permissions
+still apply. An explicit request not to use skills opts out of this workflow.
+Load skills through the active host mapping, never by assuming a tool name.
 
 ## Critical Partner, Not a Mirror
 

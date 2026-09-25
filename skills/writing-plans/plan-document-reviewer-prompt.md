@@ -1,5 +1,7 @@
 # Plan Document Reviewer Prompt Template
 
+Translate dispatch fields using [platforms.md](../using-superpowers/references/platforms.md).
+
 Use this template when dispatching a plan document reviewer subagent.
 
 **Purpose:** Verify the plan is complete, matches the spec, and has proper task decomposition.
@@ -7,7 +9,10 @@ Use this template when dispatching a plan document reviewer subagent.
 **Dispatch after:** The complete plan is written.
 
 ```
-Subagent (general-purpose):
+Worker request (translate to the active host's dispatch schema):
+  controller: [CONTROLLER_ID — actual parent agent identity]
+  worktree: [ABSOLUTE_WORKTREE_PATH]
+  context: fresh task context; no inherited conversation history
   description: "Review plan document"
   prompt: |
     You are a plan document reviewer. Verify this plan is complete and ready for implementation.

@@ -1,0 +1,8 @@
+* text=auto
+*.md text eol=lf
+*.py text eol=lf
+*.sh text eol=lf
+*.js text eol=lf
+skills/subagent-driven-development/scripts/review-package text eol=lf
+skills/subagent-driven-development/scripts/sdd-workspace text eol=lf
+skills/subagent-driven-development/scripts/task-brief text eol=lf

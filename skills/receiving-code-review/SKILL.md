@@ -5,6 +5,8 @@ description: Use when receiving code review feedback, before implementing sugges
 
 # Code Review Reception
 
+**Host setup:** Before tool operations, read [platforms.md](../using-superpowers/references/platforms.md) once per session. It maps this unchanged workflow to Claude Code or Codex; it does not restart routing or override user instructions.
+
 ## Overview
 
 Code review requires technical evaluation, not emotional performance.

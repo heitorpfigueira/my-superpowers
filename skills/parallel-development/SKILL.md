@@ -5,6 +5,8 @@ description: Use once git-branch-workflow's spec and plans reveal 2+ independent
 
 # Parallel Development
 
+**Host setup:** Before tool operations, read [platforms.md](../using-superpowers/references/platforms.md) once per session. It maps this unchanged workflow to Claude Code or Codex; it does not restart routing or override user instructions.
+
 ## Overview
 
 git-branch-workflow already allows several parent branches under one grandparent
@@ -35,7 +37,7 @@ slices concurrently."
 - **Subagent** stays scoped to what a developer agent (or the core agent
   working solo) dispatches for one task - an implementer or a reviewer. A
   developer agent is never a "subagent" in this skill's vocabulary, even
-  though mechanically it is spawned the same way (the `Agent` tool). Keep the
+  though mechanically it is spawned the same way (the active host's worker-dispatch tool). Keep the
   two words apart in anything you write here or in a dispatch prompt - "don't
   dispatch subagents in parallel" (subagent-driven-development's rule) is
   about a *single* developer agent's own implementers, not about running
@@ -79,6 +81,12 @@ plan.
 
 ## Step 1: Set Up Each Developer Agent
 
+Before dispatch, verify worker capacity, fresh-context support, nested delegation,
+message/resume support, and worktree isolation through platforms.md. Reserve enough
+capacity for each active developer's implementer/reviewer. If that is unavailable,
+run parent slices sequentially from the core agent with the same reviews and human
+gates; report the limitation. Never substitute concurrent writers in one checkout.
+
 The core agent - never the developer agent itself - creates the ground the
 developer agent will stand on, so branch naming stays under
 git-branch-workflow's convention and the roster (below) always has a real
@@ -91,11 +99,11 @@ path to point at:
 3. Only then dispatch the developer agent, with its worktree path and branch
    name already fixed.
 
-**Dispatch a named background agent per slice** (the `Agent` tool, not a
+**Dispatch a named background agent per slice** (the active host's worker-dispatch tool, not a
 fork - a developer agent needs its own isolated context, not the core
 agent's history). Name it after the parent's topic slug (a parent
 `release-calendar-sync/feature-mobile-shell` becomes developer agent
-`mobile-shell`) so the roster and any `SendMessage` stay readable.
+`mobile-shell`) so the roster and any messages stay readable.
 
 **Model:** a capable tier, not the cheap tier. A developer agent does
 coordination and judgment - running its own subagent-driven-development loop,
@@ -115,7 +123,8 @@ none of the core agent's context):
   partner" instruction those skills contain - a developer agent never
   presents a menu or a question to a human directly.
 - The scope-bleed protocol (below).
-- Its name, and the core agent's name (`main`) to message.
+- Its identity, and the actual core agent identity bound to `CONTROLLER_ID`.
+- The active host mapping, available model choices, and worker capacity/depth limits.
 
 ## Step 2: The Relay Protocol
 
@@ -127,7 +136,7 @@ asking:
 | Who's asking | What happens |
 |---|---|
 | The interactive session (core agent working solo, or core agent's own grandparent-level close-out) | Ask directly, exactly as those skills already describe. |
-| A developer agent | `SendMessage` to `main` with the gate's content, then stop and wait. Never proceed on its own judgment, never time out into a default. |
+| A developer agent | Send the gate's content to `CONTROLLER_ID` through the host messaging tool, then stop and wait. Never proceed on its own judgment, never time out into a default. |
 
 This covers, at minimum: git-branch-workflow's child-branch squash-merge
 review (Step 2.5) and its local-pull-requests delivery form,
@@ -144,8 +153,8 @@ receive each message, surface it to you exactly as if it had arisen in the
 core agent's own execution — including the developer agent's own
 recommendation when the underlying skill calls for one (subagent-driven-development's
 conflict scan and BLOCKED report both do), not stripped down to the bare
-finding — wait for your actual answer, then `SendMessage` the specific
-developer agent back to unblock it. Multiple developer agents
+finding — wait for your actual answer, then relay it to the specific developer
+agent through the host's messaging or resume tool to unblock it. Multiple developer agents
 finishing around the same time just means multiple relayed questions in
 sequence - nothing merges, and no menu resolves, without your explicit
 answer reaching the developer agent that asked.
@@ -156,7 +165,7 @@ A developer agent that notices code outside its task's declared scope - code
 that looks like it belongs to (or could break) another slice - does not stop
 and does not decide alone:
 
-1. **Flag, don't block.** `SendMessage` `main` naming the file/area, why it
+1. **Flag, don't block.** Notify `CONTROLLER_ID` through the host messaging tool, naming the file/area, why it
    looks out of scope, and which sibling slice it might affect. Keep working.
 2. **Core agent logs it** in the roster (below) as `flagged`, and relays it
    to the named sibling as a non-blocking heads-up.
@@ -190,7 +199,7 @@ design exists to avoid. Instead: one agent drives, the other is consulted.
 | **What it merges** | The other parent's relevant commits so far | Both finished parents |
 | **What detects it** | The scope-bleed self-check (Step 3) | Re-running every already-landed sibling parent's parent-level tests when a new parent merges onto the same grandparent (git-branch-workflow) - a merge can be textually clean and still break a sibling's contract |
 | **Who resolves it** | One of the two developer agents, driving | Same pattern - pick the developer agent whose slice is more central to the conflict, or a fresh agent briefed with both sides |
-| **The other agent's role** | Consulted via `SendMessage` as the authority on its own code's intent - never a simultaneous co-editor | Same |
+| **The other agent's role** | Consulted via the host messaging tool as the authority on its own code's intent - never a simultaneous co-editor | Same |
 | **Where it lands** | Reviewed (Step 2's relay, same human gate as any child branch), then folded back into both parents, which continue independently | Reviewed the same way, then **this branch** - not the second parent's original PR - is what lands on the grandparent |
 
 The review gate here is not optional or lighter than usual because two agents
@@ -233,8 +242,8 @@ that redispatch a safe no-op for anything already finished. So recovery is
 always the same two-step move regardless of what actually happened to the
 agent:
 
-- **Cheap path:** still alive - `SendMessage` it by name, it resumes from its
-  own transcript.
+- **Cheap path:** still available - use the host's follow-up/resume tool with its
+  saved worker identity so it continues from its own transcript.
 - **Fallback path:** gone - spawn fresh, point it at the same worktree and
   plan, let its own ledger tell it where it left off.
 
@@ -270,8 +279,8 @@ finished concurrently instead of in sequence.
 |---|---|
 | 2+ independent parent slices identified | Propose parallel dispatch, wait for yes |
 | Setting up a developer agent | Core agent creates branch + worktree first, then dispatches, capable-tier model |
-| Developer agent hits any "ask human" gate | `SendMessage` `main`, stop, wait to be resumed |
-| Developer agent notices out-of-scope code | Flag `main`, keep working, don't block |
+| Developer agent hits any "ask human" gate | Relay the question to `CONTROLLER_ID`, stop, wait for the human's answer |
+| Developer agent notices out-of-scope code | Flag `CONTROLLER_ID`, keep working, don't block |
 | Sibling confirms a flagged overlap is real | Escalate to integration-branch resolution (Step 4) |
 | Core agent restarts or compacts | Re-read the roster, resume-by-name or redispatch-fresh |
 | All parents' PRs open | Core agent proceeds to the grandparent PR directly |

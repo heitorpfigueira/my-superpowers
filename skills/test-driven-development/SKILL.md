@@ -5,6 +5,8 @@ description: Use when implementing any feature or bugfix, before writing impleme
 
 # Test-Driven Development (TDD)
 
+**Host setup:** Before tool operations, read [platforms.md](../using-superpowers/references/platforms.md) once per session. It maps this unchanged workflow to Claude Code or Codex; it does not restart routing or override user instructions.
+
 ## Overview
 
 Write the test first. Watch it fail. Write minimal code to pass.
@@ -324,6 +326,6 @@ Otherwise → not TDD
 ```
 
 No exceptions without your human partner's permission. A developer agent
-under parallel-development asking for that exception relays the ask via
-`SendMessage` to the core agent (`main`) rather than asking directly, and
-waits for the answer before proceeding either way.
+under parallel-development asking for that exception relays the ask through
+the host messaging tool to the core agent (`CONTROLLER_ID`, supplied at dispatch)
+and waits for the human's answer before proceeding either way.

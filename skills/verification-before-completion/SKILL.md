@@ -5,6 +5,8 @@ description: Use when about to claim work is complete, fixed, or passing, before
 
 # Verification Before Completion
 
+**Host setup:** Before tool operations, read [platforms.md](../using-superpowers/references/platforms.md) once per session. It maps this unchanged workflow to Claude Code or Codex; it does not restart routing or override user instructions.
+
 ## Overview
 
 **Core principle:** Evidence before claims, always.

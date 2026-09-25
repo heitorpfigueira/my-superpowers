@@ -2,10 +2,16 @@
 
 Use this template when dispatching a code reviewer subagent.
 
+Resolve dispatch, messaging, and shell operations through
+[platforms.md](../using-superpowers/references/platforms.md).
+
 **Purpose:** Review completed work against requirements and code quality standards before it cascades into more work.
 
 ```
-Subagent (general-purpose):
+Worker request (translate to the active host's dispatch schema):
+  controller: [CONTROLLER_ID — actual parent agent identity]
+  worktree: [ABSOLUTE_WORKTREE_PATH]
+  context: fresh task context; no inherited conversation history
   description: "Review code changes"
   prompt: |
     You are a Senior Code Reviewer with expertise in software architecture,
